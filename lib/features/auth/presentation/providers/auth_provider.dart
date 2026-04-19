@@ -136,11 +136,10 @@ class AuthProvider extends ChangeNotifier {
     _setLoading();
     await _ensureGoogleSignInInitialized();
     try {
-      // 3: authenticate() digunakan sebagai pengganti signIn()
       final googleUser = await GoogleSignIn.instance.authenticate();
 
-      // 4: authentication sekarang adalah getter synchronous (tanpa await)
-      final googleAuth = googleUser.authentication;
+      // Tambahkan await di sini ya!
+      final googleAuth = await googleUser.authentication;
 
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
