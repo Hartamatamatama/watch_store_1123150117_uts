@@ -17,7 +17,27 @@ enum AuthStatus {
 
 class AuthProvider extends ChangeNotifier {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  bool _isGoogleSignInInitialized = false;
+
+  AuthProvider() {
+    _initGoogleSignIn();
+  }
+
+  // 1 & 2: Google Sign-In v7 mewajibkan inisialisasi awal lewat singleton
+  Future<void> _initGoogleSignIn() async {
+    try {
+      await GoogleSignIn.instance.initialize();
+      _isGoogleSignInInitialized = true;
+    } catch (e) {
+      debugPrint('Gagal inisialisasi Google Sign-In: $e');
+    }
+  }
+
+  Future<void> _ensureGoogleSignInInitialized() async {
+    if (!_isGoogleSignInInitialized) {
+      await _initGoogleSignIn();
+    }
+  }
 
   // ─── State ───────────────────────────────────────────────
   AuthStatus _status = AuthStatus.initial;
@@ -111,25 +131,29 @@ class AuthProvider extends ChangeNotifier {
     }
   }
 
-  // ─── Login dengan Google ──────────────────────────────────
+  // ─── Login dengan Google (Versi 7.x) ──────────────────────
   Future<bool> loginWithGoogle() async {
     _setLoading();
+    await _ensureGoogleSignInInitialized();
     try {
-      final googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        _setError('Login Google dibatalkan');
-        return false;
-      }
+      // 3: authenticate() digunakan sebagai pengganti signIn()
+      final googleUser = await GoogleSignIn.instance.authenticate();
 
-      final googleAuth = await googleUser.authentication;
+      // 4: authentication sekarang adalah getter synchronous (tanpa await)
+      final googleAuth = googleUser.authentication;
+
       final credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
+
       final userCred = await _auth.signInWithCredential(credential);
       _firebaseUser = userCred.user;
 
       return await _verifyTokenToBackend();
+    } on GoogleSignInException catch (e) {
+      _setError('Login Google dibatalkan: ${e.message}');
+      return false;
     } catch (e) {
       _setError('Gagal login dengan Google: $e');
       return false;
@@ -155,7 +179,8 @@ class AuthProvider extends ChangeNotifier {
   // ─── Logout ───────────────────────────────────────────────
   Future<void> logout() async {
     await _auth.signOut();
-    await _googleSignIn.signOut();
+    // V7: Memanggil signOut lewat singleton instance
+    await GoogleSignIn.instance.signOut();
     await SecureStorageService.clearAll();
     _firebaseUser = null;
     _backendToken = null;
