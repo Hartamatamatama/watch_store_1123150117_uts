@@ -137,12 +137,16 @@ class AuthProvider extends ChangeNotifier {
     await _ensureGoogleSignInInitialized();
     try {
       final googleUser = await GoogleSignIn.instance.authenticate();
+      if (googleUser == null) {
+        _setError('Login Google dibatalkan');
+        return false;
+      }
 
-      // Tambahkan await di sini ya!
-      final googleAuth = await googleUser.authentication;
+      // 1. Tanpa await (Synchronous)
+      final googleAuth = googleUser.authentication;
 
+      // 2. accessToken DIBUANG. Firebase hanya butuh idToken.
       final credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
 
@@ -151,7 +155,8 @@ class AuthProvider extends ChangeNotifier {
 
       return await _verifyTokenToBackend();
     } on GoogleSignInException catch (e) {
-      _setError('Login Google dibatalkan: ${e.message}');
+      // 3. Menggunakan .code, bukan .message
+      _setError('Login dibatalkan atau gagal (Code: ${e.code})');
       return false;
     } catch (e) {
       _setError('Gagal login dengan Google: $e');
