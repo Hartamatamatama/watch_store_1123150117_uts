@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "339288104139",
+    "project_id": "auth-testing-farhan",
+    "storage_bucket": "auth-testing-farhan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339288104139:android:71ae62acb3074c6ed74f4e",
+        "android_client_info": {
+          "package_name": "com.example.watch_store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "339288104139-bfr7d3grl1ojod42ivsdah5mpb1vk96m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbyuzQi4fHhfVVL3jReiV44k3Qeul-kQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "339288104139-bfr7d3grl1ojod42ivsdah5mpb1vk96m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
