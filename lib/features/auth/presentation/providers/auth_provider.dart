@@ -85,7 +85,7 @@ class AuthProvider extends ChangeNotifier {
   // ─── Verify Token ke Backend ─────────────────────────────
   Future<bool> _verifyTokenToBackend() async {
     try {
-      final firebaseToken = await _firebaseUser?.getIdToken();
+      final firebaseToken = await _firebaseUser?.getIdToken(true);
       final response = await DioClient.instance.post(
         ApiConstants.verifyToken,
         data: {'firebase_token': firebaseToken},
