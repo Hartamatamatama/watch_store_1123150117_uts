@@ -3,6 +3,7 @@ import 'package:dio/dio.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/services/dio_client.dart';
 import '../../data/models/product_model.dart';
+import 'package:flutter/foundation.dart';
 
 enum ProductStatus { initial, loading, loaded, error }
 
@@ -24,15 +25,21 @@ class ProductProvider extends ChangeNotifier {
     try {
       final response = await DioClient.instance.get(ApiConstants.products);
 
-      // Backend response: { "data": [ {...}, {...} ] }
+      // 1. TAMBAHKAN INI UNTUK MENGINTIP ISI PAKET DARI GOLANG
+      debugPrint("📦 ISI JSON DARI GOLANG: ${response.data}");
+
       final List<dynamic> data = response.data['data'];
       _products = data.map((e) => ProductModel.fromJson(e)).toList();
       _status = ProductStatus.loaded;
     } on DioException catch (e) {
       _error = e.response?.data['message'] ?? 'Gagal memuat produk';
       _status = ProductStatus.error;
-    } catch (e) {
-      _error = 'Terjadi kesalahan tidak terduga';
+    } catch (e, stacktrace) {
+      // 2. TAMBAHKAN INI UNTUK MELIHAT FLUTTER TERSEDIAK DI BAGIAN MANA
+      debugPrint("🚨 ERROR FLUTTER: $e\n$stacktrace");
+
+      // 3. TAMPILKAN ERROR ASLINYA KE LAYAR DASHBOARD
+      _error = 'Gagal Parsing: $e';
       _status = ProductStatus.error;
     }
 
