@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../data/models/product_model.dart'; // Sesuaikan path modelmu
+import 'package:google_fonts/google_fonts.dart';
+import '../../data/models/product_model.dart';
 
 class ProductCard extends StatelessWidget {
   final ProductModel product;
@@ -7,7 +8,6 @@ class ProductCard extends StatelessWidget {
 
   const ProductCard({super.key, required this.product, required this.onTap});
 
-  // Pindahkan fungsi format rupiah ke sini agar widget ini mandiri
   String _formatRupiah(double value) {
     String strValue = value.toInt().toString();
     return 'Rp ${strValue.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')}';
@@ -18,118 +18,100 @@ class ProductCard extends StatelessWidget {
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(0), // Sudut tajam ala luxury brand
+        border: Border.all(color: Colors.grey.shade200, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          borderRadius: BorderRadius.circular(16),
           onTap: onTap,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // -- BAGIAN GAMBAR & BADGE STOK --
+              // -- BAGIAN GAMBAR --
               Stack(
                 children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
+                  Container(
+                    height: 160,
+                    width: double.infinity,
+                    color: const Color(
+                      0xFFF8F9FA,
+                    ), // Latar belakang abu sangat halus
                     child: Image.network(
                       product.imageUrl,
-                      height: 140,
-                      width: double.infinity,
                       fit: BoxFit.cover,
-                      errorBuilder: (_, __, ___) => Container(
-                        height: 140,
-                        color: Colors.grey.shade100,
-                        child: Icon(
-                          Icons.broken_image,
-                          size: 40,
-                          color: Colors.grey.shade400,
-                        ),
+                      errorBuilder: (_, __, ___) => Icon(
+                        Icons.watch,
+                        size: 50,
+                        color: Colors.grey.shade300,
                       ),
                     ),
                   ),
                   Positioned(
-                    top: 8,
-                    right: 8,
+                    top: 12,
+                    right: 12,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 8,
                         vertical: 4,
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.6),
-                        borderRadius: BorderRadius.circular(12),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1A1A1A), // Hitam pekat
                       ),
                       child: Text(
-                        'Stok: ${product.stock ?? 0}',
-                        style: const TextStyle(
-                          fontSize: 10,
+                        'STOK: ${product.stock ?? 0}',
+                        style: GoogleFonts.lato(
+                          fontSize: 9,
                           color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.5,
                         ),
                       ),
                     ),
                   ),
                 ],
               ),
-              // -- BAGIAN INFO TEKS --
+              // -- BAGIAN INFO --
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(12),
+                  padding: const EdgeInsets.all(16.0),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            product.name,
-                            style: const TextStyle(
+                            product.category.toUpperCase(),
+                            style: GoogleFonts.lato(
+                              fontSize: 10,
                               fontWeight: FontWeight.w700,
-                              fontSize: 14,
-                              color: Colors.black87,
+                              color: const Color(
+                                0xFFC6A87C,
+                              ), // Warna Emas/Bronze
+                              letterSpacing: 2.0,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            product.name,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.playfairDisplay(
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16,
+                              color: const Color(0xFF1A1A1A),
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 6),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 6,
-                              vertical: 2,
-                            ),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF1565C0).withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(4),
-                            ),
-                            child: Text(
-                              product.category,
-                              style: const TextStyle(
-                                fontSize: 10,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF1565C0),
-                              ),
-                            ),
                           ),
                         ],
                       ),
                       Text(
                         _formatRupiah(product.price),
-                        style: const TextStyle(
-                          color: Color(0xFFF57C00),
-                          fontWeight: FontWeight.bold,
-                          fontSize: 15,
+                        style: GoogleFonts.lato(
+                          color: const Color(0xFF1A1A1A),
+                          fontWeight: FontWeight.w400,
+                          fontSize: 14,
                         ),
                       ),
                     ],
