@@ -7,6 +7,8 @@ import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/product_provider.dart';
 import '../widgets/product_card.dart';
 import 'product_detail_page.dart';
+import '../../../cart/presentation/pages/cart_page.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -62,6 +64,46 @@ class _DashboardPageState extends State<DashboardPage> {
           ],
         ),
         actions: [
+          // Ikon Keranjang Belanja
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              IconButton(
+                icon: const Icon(
+                  Icons.shopping_bag_outlined,
+                  color: Color(0xFF1A1A1A),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const CartPage()),
+                  );
+                },
+              ),
+              // Badge jumlah item (akan muncul jika keranjang > 0)
+              if (context.watch<CartProvider>().itemCount > 0)
+                Positioned(
+                  right: 8,
+                  top: 8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFC6A87C), // Aksen emas
+                      shape: BoxShape.circle,
+                    ),
+                    child: Text(
+                      '${context.watch<CartProvider>().itemCount}',
+                      style: GoogleFonts.lato(
+                        color: Colors.white,
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          // Ikon Logout
           IconButton(
             icon: const Icon(Icons.logout, color: Color(0xFF1A1A1A)),
             tooltip: 'Sign Out',
