@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../data/models/product_model.dart';
+import '../../../cart/presentation/providers/cart_provider.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final ProductModel product;
@@ -129,13 +131,18 @@ class ProductDetailPage extends StatelessWidget {
         child: SafeArea(
           child: ElevatedButton(
             onPressed: () {
+              // Panggil fungsi addItem dari CartProvider
+              context.read<CartProvider>().addItem(product);
+
+              // Tampilkan notifikasi elegan
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
+                SnackBar(
                   content: Text(
-                    'Fitur keranjang segera hadir!',
-                    style: TextStyle(color: Colors.white),
+                    '${product.name} added to bag!',
+                    style: const TextStyle(color: Colors.white),
                   ),
-                  backgroundColor: Color(0xFF1A1A1A),
+                  backgroundColor: const Color(0xFF1A1A1A),
+                  duration: const Duration(seconds: 2),
                 ),
               );
             },
