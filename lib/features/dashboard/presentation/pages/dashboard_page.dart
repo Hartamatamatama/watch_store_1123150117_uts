@@ -5,6 +5,7 @@ import '../../../../core/routes/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/product_provider.dart';
 import '../widgets/product_card.dart'; // Import Reusable Widget yang baru kita buat
+import 'product_detail_page.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -116,9 +117,13 @@ class _DashboardPageState extends State<DashboardPage> {
               return ProductCard(
                 product: p,
                 onTap: () {
-                  ScaffoldMessenger.of(
+                  // Navigasi ke halaman detail
+                  Navigator.push(
                     context,
-                  ).showSnackBar(SnackBar(content: Text('Memilih ${p.name}')));
+                    MaterialPageRoute(
+                      builder: (context) => ProductDetailPage(product: p),
+                    ),
+                  );
                 },
               );
             },
