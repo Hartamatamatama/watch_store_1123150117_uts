@@ -56,7 +56,7 @@ class _SplashPageState extends State<SplashPage> {
             Icon(Icons.watch, size: 100, color: Colors.blueAccent),
             SizedBox(height: 20),
             Text(
-              'LILI WATCH STORE',
+              'HARTAMA WATCH STORE',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
