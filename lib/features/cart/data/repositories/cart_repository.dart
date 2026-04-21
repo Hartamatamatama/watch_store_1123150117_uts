@@ -14,7 +14,7 @@ class CartRepository {
         print("Error: User belum login!");
         return false;
       }
-      final token = await user.getIdToken();
+      final token = await user.getIdToken(true);
 
       // 2. Siapkan data paket
       final body = jsonEncode({
