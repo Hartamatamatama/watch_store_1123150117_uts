@@ -1,34 +1,45 @@
-import 'package:equatable/equatable.dart';
-
-class ProductModel extends Equatable {
+class ProductModel {
   final int id;
   final String name;
   final double price;
-  final String imageUrl;
   final String category;
-  final int stock; // 1. WADAH STOK DITAMBAHKAN
+  final String imageUrl;
+  final int? stock;
+  final String? description; // <-- Ini organ baru yang diminta UI
 
-  const ProductModel({
+  ProductModel({
     required this.id,
     required this.name,
     required this.price,
-    required this.imageUrl,
     required this.category,
-    required this.stock, // 2. WAJIB DIISI SAAT DIBUAT
+    required this.imageUrl,
+    this.stock,
+    this.description,
   });
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     return ProductModel(
-      id: json['id'] ?? json['ID'] ?? 0,
-      name: json['name'] ?? 'Tanpa Nama',
-      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      id: json['ID'] ?? 0,
+      name: json['name'] ?? '',
+      // Konversi aman ke double karena dari API kadang terbaca int
+      price: (json['price'] ?? 0).toDouble(),
+      category: json['category'] ?? '',
       imageUrl: json['image_url'] ?? '',
-      category: json['category'] ?? 'Lainnya',
-      stock: json['stock'] ?? 0, // 3. AMBIL DATA STOK DARI GOLANG
+      stock: json['stock'],
+      description:
+          json['description'], // <-- Ambil deskripsi dari backend Golang
     );
   }
 
-  @override
-  // 4. DAFTARKAN STOK KE EQUATABLE
-  List<Object?> get props => [id, name, price, imageUrl, category, stock];
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'price': price,
+      'category': category,
+      'image_url': imageUrl,
+      'stock': stock,
+      'description': description,
+    };
+  }
 }
