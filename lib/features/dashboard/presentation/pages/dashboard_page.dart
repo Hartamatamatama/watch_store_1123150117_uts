@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/product_provider.dart';
-import 'widgets/product_card.dart'; // Import Reusable Widget yang baru kita buat
+import '../widgets/product_card.dart'; // Import Reusable Widget yang baru kita buat
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
