@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../data/models/cart_item_model.dart';
+import '../../data/repositories/cart_repository.dart';
 import '../../../dashboard/data/models/product_model.dart';
 
 class CartProvider with ChangeNotifier {
@@ -17,6 +18,11 @@ class CartProvider with ChangeNotifier {
     });
     return total;
   }
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  final CartRepository _repository = CartRepository();
 
   void addItem(ProductModel product) {
     if (_items.containsKey(product.id)) {
@@ -55,5 +61,23 @@ class CartProvider with ChangeNotifier {
   void clearCart() {
     _items.clear();
     notifyListeners();
+  }
+
+  Future<bool> processCheckout() async {
+    _isLoading = true;
+    notifyListeners();
+
+    final success = await _repository.checkout(
+      _items.values.toList(),
+      totalAmount,
+    );
+
+    if (success) {
+      clearCart(); // Kosongkan keranjang jika sukses
+    }
+
+    _isLoading = false;
+    notifyListeners();
+    return success;
   }
 }
