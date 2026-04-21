@@ -164,18 +164,36 @@ class CartPage extends StatelessWidget {
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
-                        onPressed: () {
-                          // TODO: Misi selanjutnya: Integrasi ke backend Golang untuk Order!
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Processing checkout...',
-                                style: TextStyle(color: Colors.white),
-                              ),
-                              backgroundColor: Color(0xFF1A1A1A),
-                            ),
-                          );
-                        },
+                        onPressed: cart.isLoading
+                            ? null
+                            : () async {
+                                final success = await context
+                                    .read<CartProvider>()
+                                    .processCheckout();
+
+                                if (!context.mounted) return;
+
+                                if (success) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Order placed successfully! Thank you.',
+                                      ),
+                                      backgroundColor: Color(0xFFC6A87C),
+                                    ),
+                                  );
+                                  Navigator.pop(context);
+                                } else {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        'Failed to place order. Please try again.',
+                                      ),
+                                      backgroundColor: Colors.redAccent,
+                                    ),
+                                  );
+                                }
+                              },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF1A1A1A),
                           padding: const EdgeInsets.symmetric(vertical: 20),
@@ -184,7 +202,9 @@ class CartPage extends StatelessWidget {
                           ),
                         ),
                         child: Text(
-                          'PROCEED TO CHECKOUT',
+                          cart.isLoading
+                              ? 'PROCESSING...'
+                              : 'PROCEED TO CHECKOUT',
                           style: GoogleFonts.lato(
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
