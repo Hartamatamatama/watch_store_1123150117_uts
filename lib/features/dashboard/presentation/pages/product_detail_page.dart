@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import '../../data/models/product_model.dart'; // Sesuaikan path modelmu
+import 'package:google_fonts/google_fonts.dart';
+import '../../data/models/product_model.dart';
 
 class ProductDetailPage extends StatelessWidget {
   final ProductModel product;
 
   const ProductDetailPage({super.key, required this.product});
 
-  // Fungsi format rupiah
   String _formatRupiah(double value) {
     String strValue = value.toInt().toString();
     return 'Rp ${strValue.replaceAllMapped(RegExp(r'\B(?=(\d{3})+(?!\d))'), (match) => '.')}';
@@ -16,117 +16,105 @@ class ProductDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      extendBodyBehindAppBar: true, // Gambar menembus ke area atas AppBar
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.transparent,
         elevation: 0,
-        scrolledUnderElevation: 1,
-        iconTheme: const IconThemeData(color: Colors.black87),
-        title: const Text(
-          'Detail Produk',
-          style: TextStyle(
-            color: Colors.black87,
-            fontSize: 16,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        centerTitle: true,
+        iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
       ),
       body: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // 1. Gambar Produk Layar Penuh
+            // 1. Hero Image
             Container(
               width: double.infinity,
-              height: 300,
-              color: Colors.grey.shade50,
-              child: Image.network(
-                product.imageUrl,
-                fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => const Center(
-                  child: Icon(Icons.broken_image, size: 80, color: Colors.grey),
+              height: 450,
+              color: const Color(0xFFF8F9FA),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Image.network(
+                    product.imageUrl,
+                    fit: BoxFit
+                        .contain, // Agar seluruh jam tangan terlihat presisi
+                    errorBuilder: (_, __, ___) => const Center(
+                      child: Icon(Icons.watch, size: 80, color: Colors.grey),
+                    ),
+                  ),
                 ),
               ),
             ),
 
-            // 2. Informasi Utama (Nama, Kategori, Harga)
+            // 2. Info Content
             Padding(
-              padding: const EdgeInsets.all(20),
+              padding: const EdgeInsets.all(24.0),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(
-                        child: Text(
-                          product.name,
-                          style: const TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
-                        ),
+                  Center(
+                    child: Text(
+                      product.category.toUpperCase(),
+                      style: GoogleFonts.lato(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w900,
+                        color: const Color(0xFFC6A87C),
+                        letterSpacing: 3.0,
                       ),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 10,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.black87,
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Stok: ${product.stock ?? 0}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    product.category,
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.blue.shade700,
-                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    _formatRupiah(product.price),
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFFF57C00),
+                  Center(
+                    child: Text(
+                      product.name,
+                      textAlign: TextAlign.center,
+                      style: GoogleFonts.playfairDisplay(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w700,
+                        color: const Color(0xFF1A1A1A),
+                        height: 1.2,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: Text(
+                      _formatRupiah(product.price),
+                      style: GoogleFonts.lato(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w400,
+                        color: Colors.grey.shade800,
+                      ),
                     ),
                   ),
 
                   const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 20),
-                    child: Divider(color: Colors.black12),
+                    padding: EdgeInsets.symmetric(vertical: 32),
+                    child: Divider(color: Colors.black12, thickness: 1),
                   ),
 
-                  // 3. Deskripsi Produk
-                  const Text(
-                    'Deskripsi',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 8),
                   Text(
-                    product.description ?? 'Tidak ada deskripsi tersedia.',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      color: Colors.black54,
-                      height: 1.5,
+                    'THE DETAILS',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      color: const Color(0xFF1A1A1A),
+                      letterSpacing: 2.0,
                     ),
                   ),
+                  const SizedBox(height: 16),
+                  Text(
+                    product.description ??
+                        'A masterpiece of horology. No additional details provided.',
+                    style: GoogleFonts.lato(
+                      fontSize: 15,
+                      color: Colors.grey.shade700,
+                      height: 1.6,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -134,48 +122,40 @@ class ProductDetailPage extends StatelessWidget {
         ),
       ),
 
-      // 4. Bagian Bawah: Tombol Add to Cart
+      // 3. Tombol "Add to Cart" Super Elegan
       bottomNavigationBar: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              offset: const Offset(0, -4),
-              blurRadius: 10,
-            ),
-          ],
-        ),
+        padding: const EdgeInsets.all(24),
+        decoration: const BoxDecoration(color: Colors.white),
         child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: () {
-                    // TODO: Nanti kita hubungkan ini ke Cart Provider
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Fitur keranjang segera hadir!'),
-                      ),
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1565C0),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+          child: ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Fitur keranjang segera hadir!',
+                    style: TextStyle(color: Colors.white),
                   ),
-                  icon: const Icon(Icons.shopping_cart_outlined),
-                  label: const Text(
-                    'Masukkan Keranjang',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-                  ),
+                  backgroundColor: Color(0xFF1A1A1A),
                 ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A1A1A),
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(vertical: 20),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0),
+              ), // Desain kotak tegas
+              elevation: 0,
+            ),
+            child: Text(
+              'ADD TO BAG',
+              style: GoogleFonts.lato(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 2.0,
               ),
-            ],
+            ),
           ),
         ),
       ),
