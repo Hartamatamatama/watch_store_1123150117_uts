@@ -35,6 +35,7 @@ class _DashboardPageState extends State<DashboardPage> {
       backgroundColor:
           Colors.grey.shade50, // Latar belakang lebih terang agar Card menonjol
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 1, // Bayangan halus saat di-scroll
