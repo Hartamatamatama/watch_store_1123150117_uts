@@ -22,7 +22,7 @@ class FCMService {
     const InitializationSettings initSettings = InitializationSettings(
       android: androidInit,
     );
-    await _localNotifications.initialize(initSettings);
+    await _localNotifications.initialize(settings: initSettings);
 
     // 3. Buat Jalur Khusus Berprioritas Maksimal (Ini yang memicu pop-up turun!)
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
@@ -55,15 +55,16 @@ class FCMService {
         if (message.notification != null) {
           // --- A. PAKSA BANNER SISTEM MELUNCUR DARI ATAS ---
           _localNotifications.show(
-            message.notification.hashCode,
-            message.notification?.title,
-            message.notification?.body,
-            NotificationDetails(
+            id: message.notification.hashCode,
+            title: message.notification?.title,
+            body: message.notification?.body,
+            notificationDetails: NotificationDetails(
               android: AndroidNotificationDetails(
                 channel.id,
                 channel.name,
                 importance: Importance.max,
                 priority: Priority.high,
+                icon: '@mipmap/ic_launcher',
               ),
             ),
           );
