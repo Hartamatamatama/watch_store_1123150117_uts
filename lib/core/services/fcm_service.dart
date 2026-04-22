@@ -1,5 +1,6 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import '../../main.dart';
 
 class FCMService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -27,9 +28,50 @@ class FCMService {
       // 3. Menangkap notifikasi saat aplikasi sedang TERBUKA (Foreground)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('🔔 Notifikasi Masuk (Foreground)!');
+
         if (message.notification != null) {
-          debugPrint('Judul: ${message.notification?.title}');
-          debugPrint('Pesan: ${message.notification?.body}');
+          // Memunculkan Notifikasi In-App dengan tema Luxury Boutique
+          scaffoldMessengerKey.currentState?.showSnackBar(
+            SnackBar(
+              behavior: SnackBarBehavior.floating,
+              backgroundColor: const Color(0xFF1A1A1A), // Warna Hitam Premium
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              duration: const Duration(seconds: 5),
+              margin: const EdgeInsets.all(16),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.watch,
+                        color: Color(0xFFC6A87C),
+                      ), // Ikon Emas
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          message.notification?.title ?? 'Notifikasi Baru',
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFFC6A87C), // Warna Emas Premium
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    message.notification?.body ?? '',
+                    style: const TextStyle(color: Colors.white, height: 1.4),
+                  ),
+                ],
+              ),
+            ),
+          );
         }
       });
     } else {
