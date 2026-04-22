@@ -8,43 +8,50 @@ class CartRepository {
 
   Future<bool> checkout(List<CartItemModel> items, double totalAmount) async {
     try {
-      // 1. Ambil ID Card Golang dari Brankas
       final token = await SecureStorageService.getToken();
 
       if (token == null) {
-        print("Error: Token Backend tidak ditemukan! User harus login ulang.");
+        print("Error: Token Backend tidak ditemukan!");
         return false;
       }
 
-      // 2. Siapkan data paket JSON beserta alamat pengiriman
-      final body = jsonEncode({
-        "items": items
-            .map(
-              (item) => {
-                "product_id": item.productId,
-                "quantity": item.quantity,
-                "price": item.price,
-              },
-            )
-            .toList(),
-        "total_amount": totalAmount,
-        "order_date": DateTime.now().toIso8601String(),
-        "shipping_address":
-            "Jl. Merdeka No. 1, Tangerang", // Alamat sementara agar lolos validasi
+      final headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer $token",
+      };
+
+      // --- OPERASI SINKRONISASI KILAT ---
+      // Memasukkan barang dari lokal ke database Golang satu per satu
+      print("Memulai sinkronisasi keranjang ke Golang...");
+      for (var item in items) {
+        final cartBody = jsonEncode({
+          "product_id": item.productId,
+          "quantity": item.quantity,
+        });
+
+        await http.post(
+          Uri.parse("$baseUrl/cart"),
+          headers: headers,
+          body: cartBody,
+        );
+      }
+      print("Sinkronisasi selesai! Database Golang sudah terisi.");
+      // ----------------------------------
+
+      // --- EKSEKUSI CHECKOUT ---
+      // Sekarang Golang akan melihat bahwa database-nya tidak kosong
+      final checkoutBody = jsonEncode({
+        "shipping_address": "Jl. Merdeka No. 1, Tangerang",
       });
 
-      // 3. Tembak API
       final response = await http.post(
         Uri.parse("$baseUrl/orders/checkout"),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: body,
+        headers: headers,
+        body: checkoutBody,
       );
 
-      print("Status Code Golang: ${response.statusCode}");
-      print("Balasan Golang: ${response.body}");
+      print("Status Code Checkout: ${response.statusCode}");
+      print("Balasan Checkout: ${response.body}");
 
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
