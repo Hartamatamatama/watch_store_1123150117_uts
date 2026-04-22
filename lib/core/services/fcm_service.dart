@@ -1,40 +1,78 @@
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../main.dart';
 
 class FCMService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  static final FlutterLocalNotificationsPlugin _localNotifications =
+      FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
-    // 1. Meminta Izin (Sangat wajib untuk Android 13+ dan iOS)
+    // 1. Meminta Izin Firebase
     NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
+    // 2. Konfigurasi Notifikasi Lokal (Sistem Android)
+    const AndroidInitializationSettings androidInit =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    const InitializationSettings initSettings = InitializationSettings(
+      android: androidInit,
+    );
+    await _localNotifications.initialize(initSettings);
+
+    // 3. Buat Jalur Khusus Berprioritas Maksimal (Ini yang memicu pop-up turun!)
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      'high_importance_channel',
+      'High Importance Notifications',
+      importance: Importance.max,
+      // description: 'Description untuk channel notifikasi',
+    );
+
+    await _localNotifications
+        .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin
+        >()
+        ?.createNotificationChannel(channel);
+
     if (settings.authorizationStatus == AuthorizationStatus.authorized) {
       debugPrint('FCM: Izin notifikasi diberikan oleh user.');
 
-      // 2. Mengambil Token Unik HP (Alamat Kotak Pos)
       try {
         String? token = await _messaging.getToken();
         debugPrint('🔔 TOKEN FCM HP INI: $token');
-        // TODO: Nanti token ini akan kita kirim ke Golang
       } catch (e) {
         debugPrint('FCM Error: Gagal mendapatkan token - $e');
       }
 
-      // 3. Menangkap notifikasi saat aplikasi sedang TERBUKA (Foreground)
+      // 4. Menangkap notifikasi saat aplikasi TERBUKA (Foreground)
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('🔔 Notifikasi Masuk (Foreground)!');
 
         if (message.notification != null) {
-          // Memunculkan Notifikasi In-App dengan tema Luxury Boutique
+          // --- A. PAKSA BANNER SISTEM MELUNCUR DARI ATAS ---
+          _localNotifications.show(
+            message.notification.hashCode,
+            message.notification?.title,
+            message.notification?.body,
+            NotificationDetails(
+              android: AndroidNotificationDetails(
+                channel.id,
+                channel.name,
+                importance: Importance.max,
+                priority: Priority.high,
+              ),
+            ),
+          );
+
+          // --- B. TETAP TAMPILKAN SNACKBAR MEWAH DI BAWAH ---
           scaffoldMessengerKey.currentState?.showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
-              backgroundColor: const Color(0xFF1A1A1A), // Warna Hitam Premium
+              backgroundColor: const Color(0xFF1A1A1A),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -46,17 +84,14 @@ class FCMService {
                 children: [
                   Row(
                     children: [
-                      const Icon(
-                        Icons.watch,
-                        color: Color(0xFFC6A87C),
-                      ), // Ikon Emas
+                      const Icon(Icons.watch, color: Color(0xFFC6A87C)),
                       const SizedBox(width: 8),
                       Expanded(
                         child: Text(
                           message.notification?.title ?? 'Notifikasi Baru',
                           style: const TextStyle(
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFFC6A87C), // Warna Emas Premium
+                            color: Color(0xFFC6A87C),
                             fontSize: 16,
                           ),
                         ),
