@@ -8,10 +8,16 @@ import 'core/theme/app_theme.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
+import 'core/services/fcm_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Inisialisasi inti Firebase (Sudah ada di kodemu)
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // --- AKTIFKAN RADAR NOTIFIKASI ---
+  await FCMService.initialize();
 
   runApp(
     MultiProvider(
