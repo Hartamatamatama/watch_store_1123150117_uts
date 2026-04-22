@@ -108,7 +108,12 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: const Icon(Icons.logout, color: Color(0xFF1A1A1A)),
             tooltip: 'Sign Out',
             onPressed: () async {
+              // 1. Kosongkan keranjang dulu sebelum logout
+              context.read<CartProvider>().clearCart();
+
+              // 2. Lakukan proses logout
               await auth.logout();
+
               if (!mounted) return;
               Navigator.pushReplacementNamed(context, AppRouter.login);
             },
