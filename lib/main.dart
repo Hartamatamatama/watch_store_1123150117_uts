@@ -10,6 +10,10 @@ import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
 import 'core/services/fcm_service.dart';
 
+// Kunci Global untuk memanggil SnackBar dari luar UI (Service)
+final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
+    GlobalKey<ScaffoldMessengerState>();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
@@ -37,6 +41,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      scaffoldMessengerKey: scaffoldMessengerKey, // <-- Tambahkan baris ini
       title: 'Watch Store',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.light,
