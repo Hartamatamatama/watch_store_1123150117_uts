@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:firebase_auth/firebase_auth.dart'; // Pasukan Keamanan Firebase
+import '../../../../core/services/secure_storage.dart'; // Import brankas tokenmu
 import '../models/cart_item_model.dart';
 
 class CartRepository {
@@ -8,15 +8,15 @@ class CartRepository {
 
   Future<bool> checkout(List<CartItemModel> items, double totalAmount) async {
     try {
-      // 1. Ambil ID Card (Token) dari user yang sedang login
-      final user = FirebaseAuth.instance.currentUser;
-      if (user == null) {
-        print("Error: User belum login!");
+      // 1. Ambil ID Card Golang dari Brankas (Secure Storage)
+      final token = await SecureStorageService.getToken();
+
+      if (token == null) {
+        print("Error: Token Backend tidak ditemukan! User harus login ulang.");
         return false;
       }
-      final token = await user.getIdToken(true);
 
-      // 2. Siapkan data paket
+      // 2. Siapkan data paket JSON
       final body = jsonEncode({
         "items": items
             .map(
@@ -31,20 +31,18 @@ class CartRepository {
         "order_date": DateTime.now().toIso8601String(),
       });
 
-      // 3. Tembak API dengan URL yang benar dan sertakan Token JWT
+      // 3. Tembak API dengan Token Backend yang benar
       final response = await http.post(
-        Uri.parse("$baseUrl/orders/checkout"), // Penambahan /checkout
+        Uri.parse("$baseUrl/orders/checkout"),
         headers: {
           "Content-Type": "application/json",
           "Authorization":
-              "Bearer $token", // Menunjukkan ID Card ke Middleware Golang
+              "Bearer $token", // Kirim token Golang ke Satpam Golang
         },
         body: body,
       );
 
-      // (Opsional) Cetak respons dari server untuk pemantauan terminal
       print("Status Code Golang: ${response.statusCode}");
-      print("Balasan Golang: ${response.body}");
 
       return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
