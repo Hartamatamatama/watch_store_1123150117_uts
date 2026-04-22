@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/services/secure_storage.dart';
 import '../models/cart_item_model.dart';
@@ -39,9 +40,12 @@ class CartRepository {
       // ----------------------------------
 
       // --- EKSEKUSI CHECKOUT ---
-      // Sekarang Golang akan melihat bahwa database-nya tidak kosong
+      // Ambil Token FCM HP ini secara diam-diam
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+
       final checkoutBody = jsonEncode({
         "shipping_address": "Jl. Merdeka No. 1, Tangerang",
+        "fcm_token": fcmToken ?? "", // Selipkan token ke paket Golang!
       });
 
       final response = await http.post(
