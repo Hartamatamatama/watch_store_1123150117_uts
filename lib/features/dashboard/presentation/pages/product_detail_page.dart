@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../../data/models/product_model.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 
@@ -131,20 +132,17 @@ class ProductDetailPage extends StatelessWidget {
         child: SafeArea(
           child: ElevatedButton(
             onPressed: () {
-              // Panggil fungsi addItem dari CartProvider
-              context.read<CartProvider>().addItem(product);
-
-              // Tampilkan notifikasi elegan
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    '${product.name} added to bag!',
-                    style: const TextStyle(color: Colors.white),
-                  ),
-                  backgroundColor: const Color(0xFF1A1A1A),
-                  duration: const Duration(seconds: 2),
-                ),
+              // Panggil fungsi addItem dan TANGKAP hasilnya
+              final bool success = context.read<CartProvider>().addItem(
+                product,
               );
+
+              // Cukup panggil Helper Universal kita!
+              if (success) {
+                SnackBarHelper.showSuccess('${product.name} added to bag!');
+              } else {
+                SnackBarHelper.showError('Gagal: Maksimal stok tercapai!');
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF1A1A1A),
