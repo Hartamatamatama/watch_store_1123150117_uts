@@ -2,14 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/widgets/auth_header.dart';
-import '../../../../core/widgets/custom_button.dart';
-import '../../../../core/widgets/custom_text_field.dart';
-import '../../../../core/widgets/divider_with_text.dart';
 import '../../../../core/widgets/google_sign_in_button.dart';
 import '../../../../core/widgets/loading_overlay.dart';
+import '../../../../core/utils/snackbar_helper.dart'; // Senjata andalan kita
 import '../providers/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
@@ -32,9 +30,11 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  /// Handler untuk login email/password
   Future<void> _loginEmail() async {
     if (!_formKey.currentState!.validate()) return;
+
+    // Sembunyikan keyboard
+    FocusScope.of(context).unfocus();
 
     final auth = context.read<AuthProvider>();
     final ok = await auth.loginWithEmail(
@@ -46,7 +46,6 @@ class _LoginPageState extends State<LoginPage> {
     _handleLoginResult(ok, auth);
   }
 
-  /// Handler untuk login Google
   Future<void> _loginGoogle() async {
     final auth = context.read<AuthProvider>();
     final ok = await auth.loginWithGoogle();
@@ -55,18 +54,14 @@ class _LoginPageState extends State<LoginPage> {
     _handleLoginResult(ok, auth);
   }
 
-  /// Routing berdasarkan hasil login
   void _handleLoginResult(bool ok, AuthProvider auth) {
     if (ok) {
       Navigator.pushReplacementNamed(context, AppRouter.dashboard);
     } else if (auth.status == AuthStatus.emailNotVerified) {
       Navigator.pushReplacementNamed(context, AppRouter.verifyEmail);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.errorMessage ?? 'Login gagal'),
-          backgroundColor: Colors.red,
-        ),
+      SnackBarHelper.showError(
+        auth.errorMessage ?? 'Login failed. Please try again.',
       );
     }
   }
@@ -76,19 +71,43 @@ class _LoginPageState extends State<LoginPage> {
     showDialog(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Reset Password'),
-        content: CustomTextField(
-          label: 'Email',
-          hint: 'Email terdaftar',
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(0),
+        ), // Kotak tajam
+        title: Text(
+          'Reset Password',
+          style: GoogleFonts.playfairDisplay(fontWeight: FontWeight.bold),
+        ),
+        content: TextFormField(
           controller: ctrl,
           keyboardType: TextInputType.emailAddress,
+          decoration: const InputDecoration(
+            labelText: 'Email Address',
+            border: OutlineInputBorder(),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+            ),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('Batal'),
+            child: Text(
+              'Cancel',
+              style: GoogleFonts.lato(
+                color: Colors.grey.shade600,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1A1A1A),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(0),
+              ),
+            ),
             onPressed: () async {
               try {
                 await FirebaseAuth.instance.sendPasswordResetEmail(
@@ -96,22 +115,24 @@ class _LoginPageState extends State<LoginPage> {
                 );
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Email reset password terkirim!'),
-                    ),
+                  SnackBarHelper.showSuccess(
+                    'Password reset link sent to your email.',
                   );
                 }
               } catch (e) {
                 if (context.mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Gagal mengirim email reset')),
-                  );
+                  SnackBarHelper.showError('Failed to send reset email.');
                 }
               }
             },
-            child: const Text('Kirim'),
+            child: Text(
+              'Send',
+              style: GoogleFonts.lato(
+                color: Colors.white,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
           ),
         ],
       ),
@@ -124,88 +145,186 @@ class _LoginPageState extends State<LoginPage> {
 
     return LoadingOverlay(
       isLoading: isLoading,
-      message: 'Masuk ke akun...',
+      message: 'Authenticating...',
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
             child: Form(
               key: _formKey,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 32),
-                  const AuthHeader(
-                    icon: Icons.lock_open_outlined,
-                    title: 'Selamat Datang',
-                    subtitle: 'Masuk ke akun Anda untuk melanjutkan',
+                  const SizedBox(height: 20),
+                  // Judul Mewah
+                  Text(
+                    'WELCOME BACK',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 4.0,
+                      color: const Color(0xFFC6A87C), // Emas
+                    ),
                   ),
-                  const SizedBox(height: 32),
-                  CustomTextField(
-                    label: 'Email',
-                    hint: 'contoh@email.com',
+                  const SizedBox(height: 12),
+                  Text(
+                    'Sign In to Your\nExclusive Account',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                      color: const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Input Email Elegan
+                  TextFormField(
                     controller: _emailCtrl,
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    style: GoogleFonts.lato(fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'Email Address',
+                      labelStyle: GoogleFonts.lato(color: Colors.grey.shade600),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+                      ),
+                    ),
                     validator: (v) {
-                      if (v?.isEmpty ?? true) return 'Email wajib diisi';
-                      if (!EmailValidator.validate(v!)) {
-                        return 'Format email salah';
-                      }
+                      if (v?.isEmpty ?? true) return 'Email is required';
+                      if (!EmailValidator.validate(v!))
+                        return 'Invalid email format';
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
-                  CustomTextField(
-                    label: 'Password',
-                    hint: 'Masukkan password',
+                  const SizedBox(height: 24),
+
+                  // Input Password Elegan
+                  TextFormField(
                     controller: _passCtrl,
                     obscureText: !_showPass,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _showPass ? Icons.visibility_off : Icons.visibility,
+                    style: GoogleFonts.lato(fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: GoogleFonts.lato(color: Colors.grey.shade600),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
-                      onPressed: () => setState(() => _showPass = !_showPass),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showPass ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.grey.shade400,
+                        ),
+                        onPressed: () => setState(() => _showPass = !_showPass),
+                      ),
                     ),
                     validator: (v) =>
-                        (v?.isEmpty ?? true) ? 'Password wajib diisi' : null,
+                        (v?.isEmpty ?? true) ? 'Password is required' : null,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 16),
+
+                  // Lupa Password
                   Align(
                     alignment: Alignment.centerRight,
                     child: TextButton(
                       onPressed: () => _showForgotPasswordDialog(context),
-                      child: const Text('Lupa Password?'),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                      ),
+                      child: Text(
+                        'Forgot Password?',
+                        style: GoogleFonts.lato(
+                          color: Colors.grey.shade600,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8),
-                  CustomButton(
-                    label: 'Masuk',
-                    onPressed: _loginEmail,
-                    isLoading: isLoading,
-                  ),
-                  const SizedBox(height: 20),
-                  const DividerWithText(text: 'atau masuk dengan'),
-                  const SizedBox(height: 20),
-                  GoogleSignInButton(
-                    onPressed: _loginGoogle,
-                    isLoading: isLoading,
+                  const SizedBox(height: 40),
+
+                  // Tombol Sign In Solid Black
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _loginEmail,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A1A1A),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'SIGN IN',
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
+
+                  // Divider Elegan
+                  Row(
+                    children: [
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Text(
+                          'OR',
+                          style: GoogleFonts.lato(
+                            fontSize: 12,
+                            color: Colors.grey.shade500,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
+                      Expanded(child: Divider(color: Colors.grey.shade300)),
+                    ],
+                  ),
+                  const SizedBox(height: 24),
+
+                  // Google Button (menggunakan widget bawaanmu, pastikan warnanya cocok jika perlu)
+                  SizedBox(
+                    width: double.infinity,
+                    child: GoogleSignInButton(
+                      onPressed: _loginGoogle,
+                      isLoading: isLoading,
+                    ),
+                  ),
+                  const SizedBox(height: 48),
+
+                  // Link Register
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Belum punya akun? '),
+                      Text(
+                        'New to our boutique? ',
+                        style: GoogleFonts.lato(color: Colors.grey.shade600),
+                      ),
                       GestureDetector(
                         onTap: () => Navigator.pushReplacementNamed(
                           context,
                           AppRouter.register,
                         ),
-                        child: const Text(
-                          'Daftar',
-                          style: TextStyle(
-                            color: Color(0xFF1565C0),
-                            fontWeight: FontWeight.bold,
+                        child: Text(
+                          'CREATE ACCOUNT',
+                          style: GoogleFonts.lato(
+                            color: const Color(0xFF1A1A1A),
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
                           ),
                         ),
                       ),
