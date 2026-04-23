@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../dashboard/presentation/providers/product_provider.dart';
 import '../providers/cart_provider.dart';
+import '../../dashboard/presentation/providers/product_provider.dart';
 import '../../../../core/utils/snackbar_helper.dart';
+import 'success_checkout_page.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -176,18 +177,19 @@ class CartPage extends StatelessWidget {
                                 if (!context.mounted) return;
 
                                 if (success) {
-                                  // === SINYAL REFRESH DATA PRODUK ===
-                                  // Ini akan memicu fetch ulang ke Golang agar stok terbaru (0) terupdate di Dashboard
+                                  // 1. Refresh stok di dashboard
                                   context
                                       .read<ProductProvider>()
                                       .fetchProducts();
 
-                                  // Gunakan Helper Universal kita agar tidak antre
-                                  SnackBarHelper.showSuccess(
-                                    'Order placed successfully! Thank you.',
+                                  // 2. Pindah ke Halaman Sukses (Ganti Navigator.pop)
+                                  Navigator.pushReplacement(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          const SuccessCheckoutPage(),
+                                    ),
                                   );
-
-                                  Navigator.pop(context);
                                 } else {
                                   SnackBarHelper.showError(
                                     'Failed to place order. Please try again.',
