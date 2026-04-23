@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../dashboard/presentation/providers/product_provider.dart';
 import '../providers/cart_provider.dart';
-import '../../dashboard/presentation/providers/product_provider.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import 'success_checkout_page.dart';
 
