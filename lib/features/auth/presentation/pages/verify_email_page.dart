@@ -22,6 +22,7 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
   void initState() {
     super.initState();
     _startPolling();
+    _startCooldown(); // SAKLAR OTOMATIS: Nyalakan cooldown begitu halaman dibuka!
   }
 
   @override
@@ -39,18 +40,14 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
       if (success && mounted) {
         _timer?.cancel();
 
-        // Munculkan notifikasi sukses tanpa antre!
         SnackBarHelper.showSuccess('Email verified successfully! Welcome.');
         Navigator.pushReplacementNamed(context, AppRouter.dashboard);
       }
     });
   }
 
-  Future<void> _resendEmail() async {
-    if (_resendCooldown) return;
-    await context.read<AuthProvider>().resendVerificationEmail();
-
-    // Cooldown 60 detik sebelum bisa kirim lagi
+  // MESIN COOLDOWN: Dipisah agar bisa dipanggil dari mana saja
+  void _startCooldown() {
     setState(() {
       _resendCooldown = true;
       _countdown = 60;
@@ -69,9 +66,15 @@ class _VerifyEmailPageState extends State<VerifyEmailPage> {
         setState(() => _resendCooldown = false);
       }
     });
+  }
+
+  Future<void> _resendEmail() async {
+    if (_resendCooldown) return;
+
+    await context.read<AuthProvider>().resendVerificationEmail();
+    _startCooldown(); // Nyalakan ulang mesin cooldown setelah ditekan
 
     if (mounted) {
-      // Gunakan senjata Helper agar instan!
       SnackBarHelper.showSuccess(
         'Verification link has been resent to your email.',
       );
