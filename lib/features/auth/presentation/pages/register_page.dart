@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:email_validator/email_validator.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/routes/app_router.dart';
-import '../../../../core/widgets/auth_header.dart';
-import '../../../../core/widgets/custom_button.dart';
-import '../../../../core/widgets/custom_text_field.dart';
 import '../../../../core/widgets/loading_overlay.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 import '../providers/auth_provider.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -35,6 +34,8 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
 
+    FocusScope.of(context).unfocus(); // Sembunyikan keyboard
+
     final auth = context.read<AuthProvider>();
     final success = await auth.register(
       name: _nameCtrl.text.trim(),
@@ -44,14 +45,10 @@ class _RegisterPageState extends State<RegisterPage> {
 
     if (!mounted) return;
     if (success) {
-      // Navigasi ke halaman instruksi verifikasi email
       Navigator.pushReplacementNamed(context, AppRouter.verifyEmail);
     } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(auth.errorMessage ?? 'Pendaftaran gagal'),
-          backgroundColor: Colors.red,
-        ),
+      SnackBarHelper.showError(
+        auth.errorMessage ?? 'Registration failed. Please try again.',
       );
     }
   }
@@ -62,103 +59,175 @@ class _RegisterPageState extends State<RegisterPage> {
 
     return LoadingOverlay(
       isLoading: isLoading,
-      message: 'Mendaftarkan akun...',
+      message: 'Creating account...',
       child: Scaffold(
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 48),
             child: Form(
               key: _formKey,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const SizedBox(height: 32),
-
-                  // Widget reusable: AuthHeader
-                  const AuthHeader(
-                    icon: Icons.person_add_alt_1,
-                    title: 'Buat Akun Baru',
-                    subtitle: 'Lengkapi data diri Anda untuk mendaftar',
+                  // Judul Mewah
+                  Text(
+                    'JOIN THE CLUB',
+                    style: GoogleFonts.lato(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 4.0,
+                      color: const Color(0xFFC6A87C), // Emas
+                    ),
                   ),
-                  const SizedBox(height: 32),
+                  const SizedBox(height: 12),
+                  Text(
+                    'Create Your\nExclusive Account',
+                    style: GoogleFonts.playfairDisplay(
+                      fontSize: 36,
+                      fontWeight: FontWeight.bold,
+                      height: 1.2,
+                      color: const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  const SizedBox(height: 48),
 
-                  // Widget reusable: CustomTextField
-                  CustomTextField(
-                    label: 'Nama Lengkap',
-                    hint: 'Masukkan nama lengkap',
+                  // Input Nama
+                  TextFormField(
                     controller: _nameCtrl,
-                    prefixIcon: const Icon(Icons.person_outline),
+                    style: GoogleFonts.lato(fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'Full Name',
+                      labelStyle: GoogleFonts.lato(color: Colors.grey.shade600),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+                      ),
+                    ),
                     validator: (v) =>
-                        (v?.isEmpty ?? true) ? 'Nama wajib diisi' : null,
+                        (v?.isEmpty ?? true) ? 'Name is required' : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                  CustomTextField(
-                    label: 'Email',
-                    hint: 'contoh@email.com',
+                  // Input Email
+                  TextFormField(
                     controller: _emailCtrl,
                     keyboardType: TextInputType.emailAddress,
-                    prefixIcon: const Icon(Icons.email_outlined),
+                    style: GoogleFonts.lato(fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'Email Address',
+                      labelStyle: GoogleFonts.lato(color: Colors.grey.shade600),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+                      ),
+                    ),
                     validator: (v) {
-                      if (v?.isEmpty ?? true) return 'Email wajib diisi';
+                      if (v?.isEmpty ?? true) return 'Email is required';
                       if (!EmailValidator.validate(v!))
-                        return 'Format email salah';
+                        return 'Invalid email format';
                       return null;
                     },
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                  CustomTextField(
-                    label: 'Password',
-                    hint: 'Minimal 8 karakter',
+                  // Input Password
+                  TextFormField(
                     controller: _passCtrl,
                     obscureText: !_showPass,
-                    prefixIcon: const Icon(Icons.lock_outline),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _showPass ? Icons.visibility_off : Icons.visibility,
+                    style: GoogleFonts.lato(fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'Password',
+                      labelStyle: GoogleFonts.lato(color: Colors.grey.shade600),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
                       ),
-                      onPressed: () => setState(() => _showPass = !_showPass),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+                      ),
+                      suffixIcon: IconButton(
+                        icon: Icon(
+                          _showPass ? Icons.visibility_off : Icons.visibility,
+                          color: Colors.grey.shade400,
+                        ),
+                        onPressed: () => setState(() => _showPass = !_showPass),
+                      ),
                     ),
                     validator: (v) => (v?.length ?? 0) < 8
-                        ? 'Password minimal 8 karakter'
+                        ? 'Minimum 8 characters required'
                         : null,
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 24),
 
-                  CustomTextField(
-                    label: 'Konfirmasi Password',
-                    hint: 'Ulangi password',
+                  // Input Confirm Password
+                  TextFormField(
                     controller: _pass2Ctrl,
                     obscureText: !_showPass,
-                    prefixIcon: const Icon(Icons.lock_outline),
+                    style: GoogleFonts.lato(fontSize: 16),
+                    decoration: InputDecoration(
+                      labelText: 'Confirm Password',
+                      labelStyle: GoogleFonts.lato(color: Colors.grey.shade600),
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.grey.shade300),
+                      ),
+                      focusedBorder: const UnderlineInputBorder(
+                        borderSide: BorderSide(color: Color(0xFF1A1A1A)),
+                      ),
+                    ),
                     validator: (v) =>
-                        v != _passCtrl.text ? 'Password tidak cocok' : null,
+                        v != _passCtrl.text ? 'Passwords do not match' : null,
                   ),
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 48),
 
-                  // Widget reusable: CustomButton
-                  CustomButton(
-                    label: 'Daftar Sekarang',
-                    onPressed: _register,
-                    isLoading: isLoading,
+                  // Tombol Register
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: isLoading ? null : _register,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1A1A1A),
+                        padding: const EdgeInsets.symmetric(vertical: 20),
+                        shape: const RoundedRectangleBorder(
+                          borderRadius: BorderRadius.zero,
+                        ),
+                        elevation: 0,
+                      ),
+                      child: Text(
+                        'CREATE ACCOUNT',
+                        style: GoogleFonts.lato(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 2.0,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
                   ),
-                  const SizedBox(height: 16),
+                  const SizedBox(height: 32),
 
-                  // Link ke Login
+                  // Link Login
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text('Sudah punya akun? '),
+                      Text(
+                        'Already a member? ',
+                        style: GoogleFonts.lato(color: Colors.grey.shade600),
+                      ),
                       GestureDetector(
                         onTap: () => Navigator.pushReplacementNamed(
                           context,
                           AppRouter.login,
                         ),
-                        child: const Text(
-                          'Masuk',
-                          style: TextStyle(
-                            color: Color(0xFF1565C0),
-                            fontWeight: FontWeight.bold,
+                        child: Text(
+                          'SIGN IN',
+                          style: GoogleFonts.lato(
+                            color: const Color(0xFF1A1A1A),
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.0,
                           ),
                         ),
                       ),
