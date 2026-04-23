@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../providers/cart_provider.dart';
+import '../../dashboard/presentation/providers/product_provider.dart';
+import '../../../../core/utils/snackbar_helper.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -174,23 +176,21 @@ class CartPage extends StatelessWidget {
                                 if (!context.mounted) return;
 
                                 if (success) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Order placed successfully! Thank you.',
-                                      ),
-                                      backgroundColor: Color(0xFFC6A87C),
-                                    ),
+                                  // === SINYAL REFRESH DATA PRODUK ===
+                                  // Ini akan memicu fetch ulang ke Golang agar stok terbaru (0) terupdate di Dashboard
+                                  context
+                                      .read<ProductProvider>()
+                                      .fetchProducts();
+
+                                  // Gunakan Helper Universal kita agar tidak antre
+                                  SnackBarHelper.showSuccess(
+                                    'Order placed successfully! Thank you.',
                                   );
+
                                   Navigator.pop(context);
                                 } else {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Failed to place order. Please try again.',
-                                      ),
-                                      backgroundColor: Colors.redAccent,
-                                    ),
+                                  SnackBarHelper.showError(
+                                    'Failed to place order. Please try again.',
                                   );
                                 }
                               },
