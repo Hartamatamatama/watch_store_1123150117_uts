@@ -2,6 +2,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import '../../main.dart';
+import '../routes/app_router.dart';
+
+// 1. Fungsi TOP-LEVEL: Wajib berada di LUAR class agar bisa berjalan saat aplikasi mati!
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  debugPrint("🚨 FCM Background Message Terdeteksi: ${message.messageId}");
+  // Biarkan OS Android yang memunculkan bannernya secara otomatis.
+}
 
 class FCMService {
   static final FirebaseMessaging _messaging = FirebaseMessaging.instance;
@@ -9,27 +17,35 @@ class FCMService {
       FlutterLocalNotificationsPlugin();
 
   static Future<void> initialize() async {
-    // 1. Meminta Izin Firebase
+    // 2. Daftarkan Radar Latar Belakang
+    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+
+    // 3. Meminta Izin Firebase
     NotificationSettings settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
       sound: true,
     );
 
-    // 2. Konfigurasi Notifikasi Lokal (Sistem Android)
+    // Konfigurasi Notifikasi Lokal (Sistem Android)
     const AndroidInitializationSettings androidInit =
         AndroidInitializationSettings('@mipmap/ic_launcher');
     const InitializationSettings initSettings = InitializationSettings(
       android: androidInit,
     );
-    await _localNotifications.initialize(settings: initSettings);
+    await _localNotifications.initialize(
+      settings: initSettings,
+      // 4. TAP HANDLER LOKAL: Jika user menekan banner dari flutter_local_notifications
+      onDidReceiveNotificationResponse: (NotificationResponse response) {
+        debugPrint('🔔 Banner Lokal Ditekan!');
+        _handleNotificationTap();
+      },
+    );
 
-    // 3. Buat Jalur Khusus Berprioritas Maksimal (Ini yang memicu pop-up turun!)
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'high_importance_channel',
       'High Importance Notifications',
       importance: Importance.max,
-      // description: 'Description untuk channel notifikasi',
     );
 
     await _localNotifications
@@ -48,12 +64,12 @@ class FCMService {
         debugPrint('FCM Error: Gagal mendapatkan token - $e');
       }
 
-      // 4. Menangkap notifikasi saat aplikasi TERBUKA (Foreground)
+      // --- NYAWA 1: FOREGROUND ---
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
         debugPrint('🔔 Notifikasi Masuk (Foreground)!');
 
         if (message.notification != null) {
-          // --- A. PAKSA BANNER SISTEM MELUNCUR DARI ATAS ---
+          // A. PAKSA BANNER SISTEM MELUNCUR DARI ATAS
           _localNotifications.show(
             id: message.notification.hashCode,
             title: message.notification?.title,
@@ -69,7 +85,7 @@ class FCMService {
             ),
           );
 
-          // --- B. TETAP TAMPILKAN SNACKBAR MEWAH DI BAWAH ---
+          // B. TETAP TAMPILKAN SNACKBAR MEWAH DI BAWAH
           scaffoldMessengerKey.currentState?.showSnackBar(
             SnackBar(
               behavior: SnackBarBehavior.floating,
@@ -110,8 +126,41 @@ class FCMService {
           );
         }
       });
+
+      // --- NYAWA 2: BACKGROUND TAP ---
+      // Menangkap klik banner saat aplikasi sedang minimize (di background)
+      FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint('🔔 Banner FCM (Background) Ditekan!');
+        _handleNotificationTap();
+      });
+
+      // --- NYAWA 3: TERMINATED TAP ---
+      // Menangkap klik banner yang membuat aplikasi menyala dari kondisi mati total
+      RemoteMessage? initialMessage = await _messaging.getInitialMessage();
+      if (initialMessage != null) {
+        debugPrint(
+          '🔔 Banner FCM (Terminated) Ditekan! Menyalakan Aplikasi...',
+        );
+        // Kita beri sedikit delay agar framework Flutter selesai menggambar UI (misal Splash Screen)
+        Future.delayed(const Duration(seconds: 1), () {
+          _handleNotificationTap();
+        });
+      }
     } else {
       debugPrint('FCM: User menolak izin notifikasi.');
+    }
+  }
+
+  // 5. FUNGSI TELEPORTASI
+  // Karena kita belum membuat halaman "My Orders", untuk saat ini kita arahkan user kembali ke Dashboard.
+  static void _handleNotificationTap() {
+    if (scaffoldMessengerKey.currentContext != null) {
+      Navigator.of(
+        scaffoldMessengerKey.currentContext!,
+      ).pushNamedAndRemoveUntil(
+        AppRouter.dashboard,
+        (route) => false, // Hapus seluruh tumpukan halaman sebelumnya
+      );
     }
   }
 }
