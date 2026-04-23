@@ -15,6 +15,9 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Tambahkan detektor ini:
+    final bool isSoldOut = (product.stock ?? 0) <= 0;
+
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -34,9 +37,7 @@ class ProductCard extends StatelessWidget {
                   Container(
                     height: 160,
                     width: double.infinity,
-                    color: const Color(
-                      0xFFF8F9FA,
-                    ), // Latar belakang abu sangat halus
+                    color: const Color(0xFFF8F9FA),
                     child: Image.network(
                       product.imageUrl,
                       fit: BoxFit.cover,
@@ -47,6 +48,15 @@ class ProductCard extends StatelessWidget {
                       ),
                     ),
                   ),
+                  // EFEK PUDAR JIKA SOLD OUT
+                  if (isSoldOut)
+                    Container(
+                      height: 160,
+                      width: double.infinity,
+                      color: Colors.white.withOpacity(
+                        0.6,
+                      ), // Lapisan transparan
+                    ),
                   Positioned(
                     top: 12,
                     right: 12,
@@ -55,11 +65,14 @@ class ProductCard extends StatelessWidget {
                         horizontal: 8,
                         vertical: 4,
                       ),
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1A1A1A), // Hitam pekat
+                      decoration: BoxDecoration(
+                        // Merah gelap ala butik jika habis, Hitam jika ada
+                        color: isSoldOut
+                            ? const Color(0xFF8B0000)
+                            : const Color(0xFF1A1A1A),
                       ),
                       child: Text(
-                        'STOK: ${product.stock ?? 0}',
+                        isSoldOut ? 'SOLD OUT' : 'STOK: ${product.stock}',
                         style: GoogleFonts.lato(
                           fontSize: 9,
                           color: Colors.white,
