@@ -12,7 +12,7 @@
 
 ## 📺 Video Demo & Presentasi
 Tonton demonstrasi lengkap fitur dan arsitektur aplikasi di sini:
-https://youtu.be/XhDkMAFpHK4
+https://youtu.be/dDd0rBpKcdY
 
 ---
 
