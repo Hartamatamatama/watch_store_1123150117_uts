@@ -141,7 +141,7 @@ class ProductDetailPage extends StatelessWidget {
               if (success) {
                 SnackBarHelper.showSuccess('${product.name} added to bag!');
               } else {
-                SnackBarHelper.showError('Gagal: Maksimal stok tercapai!');
+                SnackBarHelper.showError('Sayang Sekali, Stok Habis!');
               }
             },
             style: ElevatedButton.styleFrom(
