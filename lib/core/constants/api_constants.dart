@@ -4,6 +4,8 @@ class ApiConstants {
   // Gunakan 127.0.0.1 sebagai ganti localhost atau IP Wi-Fi
   static const String baseUrl = 'http://127.0.0.1:8080/v1';
 
+  // static const String baseUrl = 'http://10.72.121.59:8080/v1';
+
   // Auth endpoints
   static const String verifyToken = '/auth/verify-token';
 

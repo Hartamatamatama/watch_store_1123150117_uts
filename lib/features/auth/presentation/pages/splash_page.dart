@@ -53,7 +53,7 @@ class _SplashPageState extends State<SplashPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             // Ikon jam sementara
-            Icon(Icons.watch, size: 100, color: Colors.blueAccent),
+            Icon(Icons.watch, size: 100, color: Color(0xFFC6A87C)),
             SizedBox(height: 20),
             Text(
               'HARTAMA WATCH STORE',
