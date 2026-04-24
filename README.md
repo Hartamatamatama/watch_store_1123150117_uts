@@ -16,18 +16,6 @@ https://youtu.be/XhDkMAFpHK4
 
 ---
 
-## 📸 Dokumentasi Aplikasi (Screenshots)
-
-| Splash Screen | Login & Register | Verify Email |
-|---|---|---|
-| | | |
-
-| Dashboard | Product Detail | Success Checkout |
-|---|---|---|
-| | | |
-
----
-
 ## ✨ Fitur Utama
 
 ### 📱 Frontend (Flutter)
