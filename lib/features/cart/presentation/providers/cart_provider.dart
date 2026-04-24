@@ -24,9 +24,17 @@ class CartProvider with ChangeNotifier {
 
   final CartRepository _repository = CartRepository();
 
-  void addItem(ProductModel product) {
+  // Ubah tipe data kembalian dari void menjadi bool agar UI tahu statusnya
+  bool addItem(ProductModel product) {
+    final currentStock = product.stock ?? 0; // Ambil info stok dari database
+
     if (_items.containsKey(product.id)) {
-      // Jika jam tangan sudah ada di keranjang, tambah jumlahnya
+      // PERTAHANAN 1: Cegah jika jumlah di keranjang sudah mencapai batas stok
+      if (_items[product.id]!.quantity >= currentStock) {
+        return false; // TOLAK!
+      }
+
+      // Jika masih aman, tambah jumlahnya
       _items.update(
         product.id,
         (existingItem) => CartItemModel(
@@ -38,7 +46,12 @@ class CartProvider with ChangeNotifier {
         ),
       );
     } else {
-      // Jika belum ada, masukkan sebagai barang baru
+      // PERTAHANAN 2: Cegah barang masuk jika stok di database memang 0 (Habis)
+      if (currentStock < 1) {
+        return false; // TOLAK!
+      }
+
+      // Jika belum ada dan stok tersedia, masukkan sebagai barang baru
       _items.putIfAbsent(
         product.id,
         () => CartItemModel(
@@ -51,6 +64,7 @@ class CartProvider with ChangeNotifier {
       );
     }
     notifyListeners(); // Beri tahu UI untuk update!
+    return true; // BERHASIL!
   }
 
   void removeItem(int productId) {
