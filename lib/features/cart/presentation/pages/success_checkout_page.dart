@@ -53,7 +53,7 @@ class SuccessCheckoutPage extends StatelessWidget {
 
               // 3. Pesan Deskriptif
               Text(
-                'Laporan diterima, Komandan! Pesanan jam tangan mewahmu telah kami amankan dan sedang diproses oleh tim ahli kami.',
+                'Laporan diterima, Pesanan jam tangan mewahmu telah kami amankan dan sedang diproses oleh tim ahli kami.',
                 textAlign: TextAlign.center,
                 style: GoogleFonts.lato(
                   fontSize: 15,
