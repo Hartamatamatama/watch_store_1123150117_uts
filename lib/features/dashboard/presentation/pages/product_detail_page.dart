@@ -17,13 +17,36 @@ class ProductDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // --- PENGAMBILAN WARNA DINAMIS DARI TEMA ---
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final scaffoldBgColor = theme.scaffoldBackgroundColor;
+    final surfaceColor = theme.colorScheme.surface;
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
+    // Warna khusus agar selaras dengan desain luxury
+    final imageBgColor = isDark
+        ? const Color(0xFF1E1E1E)
+        : const Color(0xFFF8F9FA);
+    final dividerColor = isDark ? const Color(0xFF3A3A3A) : Colors.black12;
+    final buttonBgColor = isDark
+        ? const Color(0xFFC6A87C)
+        : const Color(0xFF1A1A1A); // Emas di Dark, Hitam di Light
+    final buttonTextColor = isDark
+        ? const Color(0xFF1A1A1A)
+        : Colors.white; // Hitam di atas Emas, Putih di atas Hitam
+
     return Scaffold(
-      backgroundColor: Colors.white,
-      extendBodyBehindAppBar: true, // Gambar menembus ke area atas AppBar
+      backgroundColor: scaffoldBgColor, // <-- Dinamis
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
+        // Icon kembali berlawanan dengan warna background gambar
+        iconTheme: IconThemeData(
+          color: isDark ? Colors.white : const Color(0xFF1A1A1A),
+        ),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -33,17 +56,22 @@ class ProductDetailPage extends StatelessWidget {
             Container(
               width: double.infinity,
               height: 450,
-              color: const Color(0xFFF8F9FA),
+              color: imageBgColor, // <-- Dinamis
               child: SafeArea(
                 bottom: false,
                 child: Padding(
                   padding: const EdgeInsets.all(24.0),
                   child: Image.network(
                     product.imageUrl,
-                    fit: BoxFit
-                        .contain, // Agar seluruh jam tangan terlihat presisi
-                    errorBuilder: (_, __, ___) => const Center(
-                      child: Icon(Icons.watch, size: 80, color: Colors.grey),
+                    fit: BoxFit.contain,
+                    errorBuilder: (_, __, ___) => Center(
+                      child: Icon(
+                        Icons.watch,
+                        size: 80,
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
+                      ),
                     ),
                   ),
                 ),
@@ -62,7 +90,9 @@ class ProductDetailPage extends StatelessWidget {
                       style: GoogleFonts.lato(
                         fontSize: 12,
                         fontWeight: FontWeight.w900,
-                        color: const Color(0xFFC6A87C),
+                        color: const Color(
+                          0xFFC6A87C,
+                        ), // Warna Emas/Bronze tetap
                         letterSpacing: 3.0,
                       ),
                     ),
@@ -75,7 +105,7 @@ class ProductDetailPage extends StatelessWidget {
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
-                        color: const Color(0xFF1A1A1A),
+                        color: onSurfaceColor, // <-- Dinamis
                         height: 1.2,
                       ),
                     ),
@@ -87,14 +117,19 @@ class ProductDetailPage extends StatelessWidget {
                       style: GoogleFonts.lato(
                         fontSize: 20,
                         fontWeight: FontWeight.w400,
-                        color: Colors.grey.shade800,
+                        color: isDark
+                            ? Colors.grey.shade400
+                            : Colors.grey.shade800, // Dinamis
                       ),
                     ),
                   ),
 
-                  const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 32),
-                    child: Divider(color: Colors.black12, thickness: 1),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 32),
+                    child: Divider(
+                      color: dividerColor,
+                      thickness: 1,
+                    ), // <-- Dinamis
                   ),
 
                   Text(
@@ -102,7 +137,7 @@ class ProductDetailPage extends StatelessWidget {
                     style: GoogleFonts.lato(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
-                      color: const Color(0xFF1A1A1A),
+                      color: onSurfaceColor, // <-- Dinamis
                       letterSpacing: 2.0,
                     ),
                   ),
@@ -112,7 +147,9 @@ class ProductDetailPage extends StatelessWidget {
                         'A masterpiece of horology. No additional details provided.',
                     style: GoogleFonts.lato(
                       fontSize: 15,
-                      color: Colors.grey.shade700,
+                      color: isDark
+                          ? Colors.grey.shade400
+                          : Colors.grey.shade700, // Dinamis
                       height: 1.6,
                       fontWeight: FontWeight.w400,
                     ),
@@ -128,16 +165,13 @@ class ProductDetailPage extends StatelessWidget {
       // 3. Tombol "Add to Cart" Super Elegan
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(24),
-        decoration: const BoxDecoration(color: Colors.white),
+        decoration: BoxDecoration(color: surfaceColor), // <-- Dinamis
         child: SafeArea(
           child: ElevatedButton(
             onPressed: () {
-              // Panggil fungsi addItem dan TANGKAP hasilnya
               final bool success = context.read<CartProvider>().addItem(
                 product,
               );
-
-              // Cukup panggil Helper Universal kita!
               if (success) {
                 SnackBarHelper.showSuccess('${product.name} added to bag!');
               } else {
@@ -145,12 +179,12 @@ class ProductDetailPage extends StatelessWidget {
               }
             },
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF1A1A1A),
-              foregroundColor: Colors.white,
+              backgroundColor: buttonBgColor, // <-- Dinamis khusus (Emas/Hitam)
+              foregroundColor: buttonTextColor, // <-- Dinamis
               padding: const EdgeInsets.symmetric(vertical: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(0),
-              ), // Desain kotak tegas
+              ),
               elevation: 0,
             ),
             child: Text(
