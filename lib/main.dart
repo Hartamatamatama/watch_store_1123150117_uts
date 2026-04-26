@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
+import 'core/providers/theme_provider.dart'; // <-- Amunisi baru diimpor
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
@@ -17,7 +18,7 @@ final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Inisialisasi inti Firebase (Sudah ada di kodemu)
+  // Inisialisasi inti Firebase
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // --- AKTIFKAN RADAR NOTIFIKASI ---
@@ -26,6 +27,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()), // <-- PERTAMA
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
@@ -40,12 +42,22 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Baca ThemeProvider — widget ini rebuild saat toggle() [cite: 152, 153]
+    final themeProvider = context.watch<ThemeProvider>();
+
     return MaterialApp(
-      scaffoldMessengerKey: scaffoldMessengerKey, // <-- Tambahkan baris ini
+      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'Watch Store',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light,
-      initialRoute: AppRouter.splash, // Tetap gunakan router milikmu
+
+      // 2. Daftarkan KEDUA tema [cite: 156]
+      theme: AppTheme.light, // ← dipakai saat ThemeMode.light
+      darkTheme: AppTheme.dark, // ← dipakai saat ThemeMode.dark
+      // 3. Tentukan mode aktif dari provider [cite: 159]
+      themeMode: themeProvider
+          .themeMode, // ← berubah saat toggle() dipanggil → seluruh app ikut [cite: 160, 161]
+
+      initialRoute: AppRouter.splash,
       routes: AppRouter.routes,
     );
   }
