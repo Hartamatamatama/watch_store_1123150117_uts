@@ -6,8 +6,22 @@ class SuccessCheckoutPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // --- PENGAMBILAN WARNA DINAMIS DARI TEMA ---
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final scaffoldBgColor = theme.scaffoldBackgroundColor;
+    final onSurfaceColor = theme.colorScheme.onSurface;
+    final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade600;
+
+    // Tombol beradaptasi: Emas di Dark Mode, Hitam di Light Mode
+    final buttonBgColor = isDark
+        ? const Color(0xFFC6A87C)
+        : const Color(0xFF1A1A1A);
+    final buttonTextColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBgColor, // <-- Dinamis
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 40),
@@ -46,7 +60,7 @@ class SuccessCheckoutPage extends StatelessWidget {
                 style: GoogleFonts.playfairDisplay(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
-                  color: const Color(0xFF1A1A1A),
+                  color: onSurfaceColor, // <-- Dinamis
                 ),
               ),
               const SizedBox(height: 24),
@@ -58,12 +72,12 @@ class SuccessCheckoutPage extends StatelessWidget {
                 style: GoogleFonts.lato(
                   fontSize: 15,
                   height: 1.6,
-                  color: Colors.grey.shade600,
+                  color: subtitleColor, // <-- Dinamis
                 ),
               ),
               const SizedBox(height: 60),
 
-              // 4. Tombol Kembali ke Beranda (Solid Black)
+              // 4. Tombol Kembali ke Beranda
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
@@ -72,7 +86,7 @@ class SuccessCheckoutPage extends StatelessWidget {
                     Navigator.of(context).popUntil((route) => route.isFirst);
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF1A1A1A),
+                    backgroundColor: buttonBgColor, // <-- Dinamis
                     padding: const EdgeInsets.symmetric(vertical: 20),
                     shape: const RoundedRectangleBorder(
                       borderRadius: BorderRadius.zero,
@@ -81,7 +95,7 @@ class SuccessCheckoutPage extends StatelessWidget {
                   child: Text(
                     'BACK TO SHOP',
                     style: GoogleFonts.lato(
-                      color: Colors.white,
+                      color: buttonTextColor, // <-- Dinamis
                       fontWeight: FontWeight.w900,
                       letterSpacing: 2.0,
                     ),
