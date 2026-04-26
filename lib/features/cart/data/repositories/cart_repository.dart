@@ -2,11 +2,10 @@ import 'dart:convert';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:http/http.dart' as http;
 import '../../../../core/services/secure_storage.dart';
+import '../../../../core/constants/api_constants.dart'; // <-- Amunisi Markas Pusat ditambahkan
 import '../models/cart_item_model.dart';
 
 class CartRepository {
-  final String baseUrl = "http://localhost:8080/v1";
-
   Future<bool> checkout(List<CartItemModel> items, double totalAmount) async {
     try {
       final token = await SecureStorageService.getToken();
@@ -30,8 +29,9 @@ class CartRepository {
           "quantity": item.quantity,
         });
 
+        // Menggunakan ApiConstants.baseUrl
         await http.post(
-          Uri.parse("$baseUrl/cart"),
+          Uri.parse("${ApiConstants.baseUrl}/cart"),
           headers: headers,
           body: cartBody,
         );
@@ -48,8 +48,9 @@ class CartRepository {
         "fcm_token": fcmToken ?? "", // Selipkan token ke paket Golang!
       });
 
+      // Menggunakan ApiConstants.baseUrl
       final response = await http.post(
-        Uri.parse("$baseUrl/orders/checkout"),
+        Uri.parse("${ApiConstants.baseUrl}/orders/checkout"),
         headers: headers,
         body: checkoutBody,
       );
