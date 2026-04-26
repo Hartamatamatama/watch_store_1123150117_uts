@@ -18,19 +18,40 @@ class CartPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final cart = context.watch<CartProvider>();
 
+    // --- PENGAMBILAN WARNA DINAMIS DARI TEMA ---
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    final scaffoldBgColor = theme.scaffoldBackgroundColor;
+    final surfaceColor = theme.colorScheme.surface;
+    final onSurfaceColor = theme.colorScheme.onSurface;
+
+    final imageBgColor = isDark
+        ? const Color(0xFF1E1E1E)
+        : const Color(0xFFF8F9FA);
+    final dividerColor = isDark ? const Color(0xFF3A3A3A) : Colors.black12;
+    final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
+    final trashIconColor = isDark ? Colors.grey.shade500 : Colors.black54;
+
+    // Tombol menyesuaikan: Emas di Dark Mode, Hitam di Light Mode
+    final buttonBgColor = isDark
+        ? const Color(0xFFC6A87C)
+        : const Color(0xFF1A1A1A);
+    final buttonTextColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: scaffoldBgColor, // <-- Dinamis
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: surfaceColor, // <-- Dinamis
         elevation: 0,
         scrolledUnderElevation: 0,
-        iconTheme: const IconThemeData(color: Color(0xFF1A1A1A)),
+        iconTheme: IconThemeData(color: onSurfaceColor), // <-- Dinamis
         title: Text(
           'YOUR BAG',
           style: GoogleFonts.lato(
             fontSize: 14,
             fontWeight: FontWeight.w900,
-            color: const Color(0xFF1A1A1A),
+            color: onSurfaceColor, // <-- Dinamis
             letterSpacing: 2.0,
           ),
         ),
@@ -44,14 +65,16 @@ class CartPage extends StatelessWidget {
                   Icon(
                     Icons.shopping_bag_outlined,
                     size: 80,
-                    color: Colors.grey.shade300,
+                    color: isDark
+                        ? Colors.grey.shade700
+                        : Colors.grey.shade300, // <-- Dinamis
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Your bag is empty.',
                     style: GoogleFonts.playfairDisplay(
                       fontSize: 20,
-                      color: Colors.grey.shade600,
+                      color: subtitleColor, // <-- Dinamis
                     ),
                   ),
                 ],
@@ -61,7 +84,7 @@ class CartPage extends StatelessWidget {
               padding: const EdgeInsets.all(24),
               itemCount: cart.items.length,
               separatorBuilder: (_, __) =>
-                  const Divider(color: Colors.black12, height: 32),
+                  Divider(color: dividerColor, height: 32), // <-- Dinamis
               itemBuilder: (context, i) {
                 final item = cart.items.values.toList()[i];
                 return Row(
@@ -71,12 +94,16 @@ class CartPage extends StatelessWidget {
                     Container(
                       width: 80,
                       height: 100,
-                      color: const Color(0xFFF8F9FA),
+                      color: imageBgColor, // <-- Dinamis
                       child: Image.network(
                         item.imageUrl,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) =>
-                            const Icon(Icons.watch, color: Colors.grey),
+                        errorBuilder: (_, __, ___) => Icon(
+                          Icons.watch,
+                          color: isDark
+                              ? Colors.grey.shade700
+                              : Colors.grey.shade300,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -90,7 +117,7 @@ class CartPage extends StatelessWidget {
                             style: GoogleFonts.playfairDisplay(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
-                              color: const Color(0xFF1A1A1A),
+                              color: onSurfaceColor, // <-- Dinamis
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -100,7 +127,7 @@ class CartPage extends StatelessWidget {
                             _formatRupiah(item.price),
                             style: GoogleFonts.lato(
                               fontSize: 14,
-                              color: Colors.grey.shade700,
+                              color: subtitleColor, // <-- Dinamis
                             ),
                           ),
                           const SizedBox(height: 8),
@@ -109,7 +136,9 @@ class CartPage extends StatelessWidget {
                             style: GoogleFonts.lato(
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
-                              color: const Color(0xFFC6A87C),
+                              color: const Color(
+                                0xFFC6A87C,
+                              ), // Warna emas tetap
                             ),
                           ),
                         ],
@@ -117,9 +146,9 @@ class CartPage extends StatelessWidget {
                     ),
                     // Tombol Hapus (Trash)
                     IconButton(
-                      icon: const Icon(
+                      icon: Icon(
                         Icons.delete_outline,
-                        color: Colors.black54,
+                        color: trashIconColor, // <-- Dinamis
                       ),
                       onPressed: () {
                         context.read<CartProvider>().removeItem(item.productId);
@@ -136,8 +165,10 @@ class CartPage extends StatelessWidget {
           : Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: Colors.white,
-                border: Border(top: BorderSide(color: Colors.grey.shade200)),
+                color: surfaceColor, // <-- Dinamis
+                border: Border(
+                  top: BorderSide(color: dividerColor),
+                ), // <-- Dinamis
               ),
               child: SafeArea(
                 child: Column(
@@ -152,6 +183,7 @@ class CartPage extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 1.5,
+                            color: onSurfaceColor, // <-- Dinamis
                           ),
                         ),
                         Text(
@@ -159,6 +191,7 @@ class CartPage extends StatelessWidget {
                           style: GoogleFonts.playfairDisplay(
                             fontSize: 22,
                             fontWeight: FontWeight.bold,
+                            color: onSurfaceColor, // <-- Dinamis
                           ),
                         ),
                       ],
@@ -177,12 +210,9 @@ class CartPage extends StatelessWidget {
                                 if (!context.mounted) return;
 
                                 if (success) {
-                                  // 1. Refresh stok di dashboard
                                   context
                                       .read<ProductProvider>()
                                       .fetchProducts();
-
-                                  // 2. Pindah ke Halaman Sukses (Ganti Navigator.pop)
                                   Navigator.pushReplacement(
                                     context,
                                     MaterialPageRoute(
@@ -197,7 +227,7 @@ class CartPage extends StatelessWidget {
                                 }
                               },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF1A1A1A),
+                          backgroundColor: buttonBgColor, // <-- Dinamis
                           padding: const EdgeInsets.symmetric(vertical: 20),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(0),
@@ -211,7 +241,7 @@ class CartPage extends StatelessWidget {
                             fontSize: 14,
                             fontWeight: FontWeight.w900,
                             letterSpacing: 2.0,
-                            color: Colors.white,
+                            color: buttonTextColor, // <-- Dinamis
                           ),
                         ),
                       ),
