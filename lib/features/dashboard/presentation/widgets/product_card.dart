@@ -15,14 +15,26 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Tambahkan detektor ini:
     final bool isSoldOut = (product.stock ?? 0) <= 0;
+
+    // --- PENGAMBILAN WARNA DINAMIS DARI TEMA ---
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Warna kartu: Jika gelap pakai abu-abu gelap khusus kartu, jika terang pakai putih
+    final surfaceColor = isDark ? const Color(0xFF2C2C2C) : Colors.white;
+    final onSurfaceColor =
+        theme.colorScheme.onSurface; // Teks: putih di dark, hitam di light
+    final borderColor = isDark ? const Color(0xFF3A3A3A) : Colors.grey.shade200;
+    final imageBgColor = isDark
+        ? const Color(0xFF1E1E1E)
+        : const Color(0xFFF8F9FA);
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: surfaceColor, // <-- Dinamis
         borderRadius: BorderRadius.circular(0), // Sudut tajam ala luxury brand
-        border: Border.all(color: Colors.grey.shade200, width: 1),
+        border: Border.all(color: borderColor, width: 1), // <-- Dinamis
       ),
       child: Material(
         color: Colors.transparent,
@@ -37,14 +49,16 @@ class ProductCard extends StatelessWidget {
                   Container(
                     height: 160,
                     width: double.infinity,
-                    color: const Color(0xFFF8F9FA),
+                    color: imageBgColor, // <-- Dinamis
                     child: Image.network(
                       product.imageUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (_, __, ___) => Icon(
                         Icons.watch,
                         size: 50,
-                        color: Colors.grey.shade300,
+                        color: isDark
+                            ? Colors.grey.shade700
+                            : Colors.grey.shade300,
                       ),
                     ),
                   ),
@@ -53,9 +67,9 @@ class ProductCard extends StatelessWidget {
                     Container(
                       height: 160,
                       width: double.infinity,
-                      color: Colors.white.withOpacity(
+                      color: surfaceColor.withOpacity(
                         0.6,
-                      ), // Lapisan transparan
+                      ), // <-- Menggunakan warna kartu yang dinamis
                     ),
                   Positioned(
                     top: 12,
@@ -66,16 +80,19 @@ class ProductCard extends StatelessWidget {
                         vertical: 4,
                       ),
                       decoration: BoxDecoration(
-                        // Merah gelap ala butik jika habis, Hitam jika ada
+                        // Merah gelap jika habis. Jika ada: Putih (Dark Mode) atau Hitam (Light Mode)
                         color: isSoldOut
                             ? const Color(0xFF8B0000)
-                            : const Color(0xFF1A1A1A),
+                            : (isDark ? Colors.white : const Color(0xFF1A1A1A)),
                       ),
                       child: Text(
                         isSoldOut ? 'SOLD OUT' : 'STOK: ${product.stock}',
                         style: GoogleFonts.lato(
                           fontSize: 9,
-                          color: Colors.white,
+                          // Teks STOK berlawanan dengan warna kotaknya
+                          color: isSoldOut
+                              ? Colors.white
+                              : (isDark ? Colors.black : Colors.white),
                           fontWeight: FontWeight.w900,
                           letterSpacing: 1.5,
                         ),
@@ -101,7 +118,7 @@ class ProductCard extends StatelessWidget {
                               fontWeight: FontWeight.w700,
                               color: const Color(
                                 0xFFC6A87C,
-                              ), // Warna Emas/Bronze
+                              ), // Warna Emas/Bronze tetap
                               letterSpacing: 2.0,
                             ),
                           ),
@@ -112,7 +129,7 @@ class ProductCard extends StatelessWidget {
                             style: GoogleFonts.playfairDisplay(
                               fontWeight: FontWeight.w700,
                               fontSize: 16,
-                              color: const Color(0xFF1A1A1A),
+                              color: onSurfaceColor, // <-- Dinamis
                             ),
                             maxLines: 2,
                             overflow: TextOverflow.ellipsis,
@@ -122,7 +139,7 @@ class ProductCard extends StatelessWidget {
                       Text(
                         _formatRupiah(product.price),
                         style: GoogleFonts.lato(
-                          color: const Color(0xFF1A1A1A),
+                          color: onSurfaceColor, // <-- Dinamis
                           fontWeight: FontWeight.w400,
                           fontSize: 14,
                         ),
