@@ -10,6 +10,8 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
 import 'core/services/fcm_service.dart';
+import 'core/services/biometric_lock_provider.dart';
+import 'core/widgets/biometric_lock_screen.dart';
 
 // Kunci Global untuk memanggil SnackBar dari luar UI (Service)
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -31,6 +33,9 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(
+          create: (_) => BiometricLockProvider()..initialize(),
+        ),
       ],
       child: const MyApp(),
     ),
@@ -42,23 +47,37 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 1. Baca ThemeProvider — widget ini rebuild saat toggle() [cite: 152, 153]
-    final themeProvider = context.watch<ThemeProvider>();
-
     return MaterialApp(
-      scaffoldMessengerKey: scaffoldMessengerKey,
       title: 'Watch Store',
       debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: const Color(0xFFFFFFFF),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFF1A1A1A),
+          brightness: Brightness.light,
+        ),
+      ),
+      darkTheme: ThemeData(
+        useMaterial3: true,
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: const Color(0xFF121212),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFC6A87C),
+          brightness: Brightness.dark,
+        ),
+      ),
+      themeMode: ThemeMode.system, // Otomatis mengikuti sistem HP
+      // --- ROUTING LAMA MILIKMU ---
+      // initialRoute: AppRouter.splash,
+      // routes: AppRouter.routes,
 
-      // 2. Daftarkan KEDUA tema [cite: 156]
-      theme: AppTheme.light, // ← dipakai saat ThemeMode.light
-      darkTheme: AppTheme.dark, // ← dipakai saat ThemeMode.dark
-      // 3. Tentukan mode aktif dari provider [cite: 159]
-      themeMode: themeProvider
-          .themeMode, // ← berubah saat toggle() dipanggil → seluruh app ikut [cite: 160, 161]
+      // Tempat pengetesan sementara jika belum pakai router global:
+      // home: const DashboardPage(),
 
-      initialRoute: AppRouter.splash,
-      routes: AppRouter.routes,
+      // --- BARU: Bungkus Seluruh Struktur Navigasi Aplikasi dengan Layar Kunci ---
+      builder: (context, child) => BiometricLockScreen(child: child!),
     );
   }
 }
