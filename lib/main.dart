@@ -5,7 +5,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'core/routes/app_router.dart';
 import 'core/theme/app_theme.dart';
-import 'core/providers/theme_provider.dart'; // <-- Amunisi baru diimpor
+import 'core/providers/theme_provider.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
@@ -29,7 +29,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ThemeProvider()), // <-- PERTAMA
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
@@ -47,9 +47,16 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Memantau perubahan tema dari provider
+    final themeProvider = context.watch<ThemeProvider>();
+
     return MaterialApp(
       title: 'Watch Store',
       debugShowCheckedModeBanner: false,
+
+      // --- PERBAIKAN 1: Sambungkan Kunci SnackBar ---
+      scaffoldMessengerKey: scaffoldMessengerKey,
+
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.light,
@@ -68,16 +75,16 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      themeMode: ThemeMode.system, // Otomatis mengikuti sistem HP
-      // --- ROUTING LAMA MILIKMU ---
-      // initialRoute: AppRouter.splash,
-      // routes: AppRouter.routes,
 
-      // Tempat pengetesan sementara jika belum pakai router global:
-      // home: const DashboardPage(),
+      // --- PERBAIKAN 2: Hubungkan ThemeMode ke Provider ---
+      themeMode: themeProvider.themeMode,
 
-      // --- BARU: Bungkus Seluruh Struktur Navigasi Aplikasi dengan Layar Kunci ---
-      builder: (context, child) => BiometricLockScreen(child: child!),
+      // --- PERBAIKAN 3: Aktifkan Kembali Routing Utama ---
+      initialRoute: AppRouter.splash,
+      routes: AppRouter.routes,
+
+      // --- PERBAIKAN 4 (Instruksiku Sebelumnya): Hilangkan tanda (!) pada child ---
+      builder: (context, child) => BiometricLockScreen(child: child),
     );
   }
 }

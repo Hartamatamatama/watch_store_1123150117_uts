@@ -4,8 +4,8 @@ import 'package:google_fonts/google_fonts.dart';
 import '../services/biometric_lock_provider.dart';
 
 class BiometricLockScreen extends StatefulWidget {
-  final Widget child;
-  const BiometricLockScreen({super.key, required this.child});
+  final Widget? child; // <-- Ubah menjadi nullable (tambahkan tanda tanya)
+  const BiometricLockScreen({super.key, this.child}); // <-- Hapus required
 
   @override
   State<BiometricLockScreen> createState() => _BiometricLockScreenState();
@@ -123,6 +123,7 @@ class _BiometricLockScreenState extends State<BiometricLockScreen>
       );
     }
 
-    return widget.child;
+    return widget.child ??
+        const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }
