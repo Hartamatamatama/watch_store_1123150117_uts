@@ -41,10 +41,13 @@ class _BiometricLockScreenState extends State<BiometricLockScreen>
     } else if (state == AppLifecycleState.resumed) {
       final backgrounded = _backgroundedAt;
       if (backgrounded != null) {
+        // --- TAMBALAN KRITIS: Reset waktu agar tidak terjadi infinite loop ---
+        _backgroundedAt = null;
+
         final elapsed = DateTime.now().difference(backgrounded);
         if (elapsed >= _lockTimeout) {
           provider.lock();
-          provider.unlock(); // Langsung tampilkan dialog sensor
+          provider.unlock(); // Tampilkan dialog sensor
         }
       }
     }
