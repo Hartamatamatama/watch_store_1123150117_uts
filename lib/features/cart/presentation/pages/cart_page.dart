@@ -5,6 +5,7 @@ import '../../../dashboard/presentation/providers/product_provider.dart';
 import '../providers/cart_provider.dart';
 import '../../../../core/utils/snackbar_helper.dart';
 import 'success_checkout_page.dart';
+import 'package:flutter_library/flutter_library.dart';
 
 class CartPage extends StatelessWidget {
   const CartPage({super.key});
@@ -244,6 +245,24 @@ class CartPage extends StatelessWidget {
                             color: buttonTextColor, // <-- Dinamis
                           ),
                         ),
+                      ),
+                    ),
+                    // --- SAKLAR TESTING CUSTOM BUTTON (TUGAS MATERI 1) ---
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      width: double.infinity,
+                      child: CustomButton(
+                        label: 'TEST LIBRARY BUTTON',
+                        color: isDark
+                            ? const Color(0xFF3A3A3A)
+                            : Colors.grey.shade300,
+                        borderRadiusTanger:
+                            BorderRadius.zero, // Menjaga garis tegas luxury
+                        onPressed: () {
+                          SnackBarHelper.showSuccess(
+                            'Library internal berhasil dieksekusi di proyek utama!',
+                          );
+                        },
                       ),
                     ),
                   ],
