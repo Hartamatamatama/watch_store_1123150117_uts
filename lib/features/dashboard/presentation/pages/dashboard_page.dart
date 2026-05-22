@@ -111,6 +111,32 @@ class _DashboardPageState extends State<DashboardPage> {
 
               const Divider(height: 32),
 
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Icon(Icons.receipt_long, color: onSurface),
+                title: Text(
+                  'My Orders',
+                  style: GoogleFonts.lato(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: onSurface,
+                  ),
+                ),
+                trailing: Icon(
+                  Icons.chevron_right,
+                  color: Colors.grey.shade500,
+                ),
+                onTap: () {
+                  Navigator.pop(context); // Tutup bottom sheet dulu
+                  Navigator.pushNamed(
+                    context,
+                    AppRouter.myOrders,
+                  ); // Buka halaman riwayat
+                },
+              ),
+
+              const Divider(height: 32),
+
               // TOMBOL LOGOUT
               ListTile(
                 contentPadding: EdgeInsets.zero,
