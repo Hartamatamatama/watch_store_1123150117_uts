@@ -12,6 +12,7 @@ import 'features/cart/presentation/providers/cart_provider.dart';
 import 'core/services/fcm_service.dart';
 import 'core/services/biometric_lock_provider.dart';
 import 'core/widgets/biometric_lock_screen.dart';
+import 'features/order/presentation/providers/order_provider.dart';
 
 // Kunci Global untuk memanggil SnackBar dari luar UI (Service)
 final GlobalKey<ScaffoldMessengerState> scaffoldMessengerKey =
@@ -33,6 +34,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => ProductProvider()),
         ChangeNotifierProvider(create: (_) => CartProvider()),
+        ChangeNotifierProvider(create: (_) => OrderProvider()),
         ChangeNotifierProvider(
           create: (_) => BiometricLockProvider()..initialize(),
         ),
