@@ -168,16 +168,14 @@ class ProductDetailPage extends StatelessWidget {
         decoration: BoxDecoration(color: surfaceColor), // <-- Dinamis
         child: SafeArea(
           child: ElevatedButton(
-            onPressed: () {
-              final bool success = context.read<CartProvider>().addItem(
-                product,
-              );
-              if (success) {
-                SnackBarHelper.showSuccess('${product.name} added to bag!');
-              } else {
-                SnackBarHelper.showError('Sayang Sekali, Stok Habis!');
-              }
-            },
+onPressed: () {
+               final bool success = context.read<CartProvider>().addToCart(widget.product.id, 1);
+               if (success) {
+                 SnackBarHelper.showSuccess('${product.name} added to bag!');
+               } else {
+                 SnackBarHelper.showError('Sayang Sekali, Stok Habis!');
+               }
+             },
             style: ElevatedButton.styleFrom(
               backgroundColor: buttonBgColor, // <-- Dinamis khusus (Emas/Hitam)
               foregroundColor: buttonTextColor, // <-- Dinamis

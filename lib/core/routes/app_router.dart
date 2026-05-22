@@ -14,6 +14,10 @@ class AppRouter {
   static const String register = '/register';
   static const String verifyEmail = '/verify-email';
   static const String dashboard = '/dashboard';
+  static const String cart = '/cart';
+  static const String checkout = '/checkout';
+  static const String orderSuccess = '/order-success';
+  static const String myOrders = '/my-orders';
 
   static Map<String, WidgetBuilder> get routes => {
     splash: (_) => const SplashPage(),
