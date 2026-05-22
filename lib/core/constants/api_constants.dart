@@ -1,10 +1,14 @@
 class ApiConstants {
   // static const String baseUrl = 'http://localhost:8080/v1';
 
-  // Gunakan 127.0.0.1 sebagai ganti localhost atau IP Wi-Fi
-  static const String baseUrl = 'http://127.0.0.1:8080/v1';
+  // Kabel USB
+  // static const String baseUrl = 'http://127.0.0.1:8080/v1';
 
+  // Wifi Kampus Tidak Works
   // static const String baseUrl = 'http://10.72.121.59:8080/v1';
+
+  // Wifi Rumah
+  static const String baseUrl = 'http://192.168.100.11:8080/v1';
 
   // Auth endpoints
   static const String verifyToken = '/auth/verify-token';
@@ -15,4 +19,11 @@ class ApiConstants {
   // Timeout
   static const int connectTimeout = 15000;
   static const int receiveTimeout = 15000;
+
+  // Cart endpoints
+  static const String cart = '/cart';
+
+  // Order endpoints
+  static const String orders = '/orders';
+  static const String checkout = '/orders/checkout';
 }
