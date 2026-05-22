@@ -10,6 +10,7 @@ import '../widgets/product_card.dart';
 import 'product_detail_page.dart';
 import '../../../cart/presentation/pages/cart_page.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
+import 'package:flutter_library/flutter_library.dart';
 
 class DashboardPage extends StatefulWidget {
   const DashboardPage({super.key});
@@ -23,6 +24,7 @@ class _DashboardPageState extends State<DashboardPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<ProductProvider>().fetchProducts();
+      context.read<CartProvider>().fetchCart();
     });
   }
 
@@ -34,16 +36,23 @@ class _DashboardPageState extends State<DashboardPage> {
   ) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      backgroundColor: Colors
+          .transparent, // <-- Buat transparan agar kita bisa kontrol dari dalam
+      elevation: 0,
       builder: (context) {
+        // Pantau terus perubahan tema di dalam builder ini
         final themeProvider = context.watch<ThemeProvider>();
         final isDark = themeProvider.isDark;
+
+        // Ambil warna dinamis
+        final surfaceColor = Theme.of(context).colorScheme.surface;
         final onSurface = Theme.of(context).colorScheme.onSurface;
 
-        return Padding(
+        return Container(
+          decoration: BoxDecoration(
+            color: surfaceColor, // <-- Latar dinamis bereaksi seketika di sini!
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          ),
           padding: const EdgeInsets.all(24.0),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -72,7 +81,7 @@ class _DashboardPageState extends State<DashboardPage> {
               ),
               const SizedBox(height: 32),
 
-              // SAKLAR DARK MODE (Sesuai Tahap 5)
+              // SAKLAR DARK MODE
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
