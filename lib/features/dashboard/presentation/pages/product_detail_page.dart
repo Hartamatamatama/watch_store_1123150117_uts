@@ -38,7 +38,7 @@ class ProductDetailPage extends StatelessWidget {
         : Colors.white; // Hitam di atas Emas, Putih di atas Hitam
 
     return Scaffold(
-      backgroundColor: scaffoldBgColor, // <-- Dinamis
+      backgroundColor: scaffoldBgColor,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -56,7 +56,7 @@ class ProductDetailPage extends StatelessWidget {
             Container(
               width: double.infinity,
               height: 450,
-              color: imageBgColor, // <-- Dinamis
+              color: imageBgColor,
               child: SafeArea(
                 bottom: false,
                 child: Padding(
@@ -105,7 +105,7 @@ class ProductDetailPage extends StatelessWidget {
                       style: GoogleFonts.playfairDisplay(
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
-                        color: onSurfaceColor, // <-- Dinamis
+                        color: onSurfaceColor,
                         height: 1.2,
                       ),
                     ),
@@ -119,17 +119,14 @@ class ProductDetailPage extends StatelessWidget {
                         fontWeight: FontWeight.w400,
                         color: isDark
                             ? Colors.grey.shade400
-                            : Colors.grey.shade800, // Dinamis
+                            : Colors.grey.shade800,
                       ),
                     ),
                   ),
 
                   Padding(
                     padding: const EdgeInsets.symmetric(vertical: 32),
-                    child: Divider(
-                      color: dividerColor,
-                      thickness: 1,
-                    ), // <-- Dinamis
+                    child: Divider(color: dividerColor, thickness: 1),
                   ),
 
                   Text(
@@ -137,7 +134,7 @@ class ProductDetailPage extends StatelessWidget {
                     style: GoogleFonts.lato(
                       fontSize: 12,
                       fontWeight: FontWeight.w900,
-                      color: onSurfaceColor, // <-- Dinamis
+                      color: onSurfaceColor,
                       letterSpacing: 2.0,
                     ),
                   ),
@@ -149,7 +146,7 @@ class ProductDetailPage extends StatelessWidget {
                       fontSize: 15,
                       color: isDark
                           ? Colors.grey.shade400
-                          : Colors.grey.shade700, // Dinamis
+                          : Colors.grey.shade700,
                       height: 1.6,
                       fontWeight: FontWeight.w400,
                     ),
@@ -165,20 +162,26 @@ class ProductDetailPage extends StatelessWidget {
       // 3. Tombol "Add to Cart" Super Elegan
       bottomNavigationBar: Container(
         padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(color: surfaceColor), // <-- Dinamis
+        decoration: BoxDecoration(color: surfaceColor),
         child: SafeArea(
           child: ElevatedButton(
-onPressed: () {
-               final bool success = context.read<CartProvider>().addToCart(widget.product.id, 1);
-               if (success) {
-                 SnackBarHelper.showSuccess('${product.name} added to bag!');
-               } else {
-                 SnackBarHelper.showError('Sayang Sekali, Stok Habis!');
-               }
-             },
+            // PERBAIKAN: Menambahkan async di sini
+            onPressed: () async {
+              // PERBAIKAN: Menggunakan await dan product.id (tanpa widget)
+              final bool success = await context.read<CartProvider>().addToCart(
+                product.id,
+                1,
+              );
+
+              if (success) {
+                SnackBarHelper.showSuccess('${product.name} added to bag!');
+              } else {
+                SnackBarHelper.showError('Gagal menambahkan ke keranjang!');
+              }
+            },
             style: ElevatedButton.styleFrom(
-              backgroundColor: buttonBgColor, // <-- Dinamis khusus (Emas/Hitam)
-              foregroundColor: buttonTextColor, // <-- Dinamis
+              backgroundColor: buttonBgColor,
+              foregroundColor: buttonTextColor,
               padding: const EdgeInsets.symmetric(vertical: 20),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(0),
