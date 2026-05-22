@@ -1,14 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../dashboard/presentation/providers/product_provider.dart';
 import '../providers/cart_provider.dart';
-import '../../../../core/utils/snackbar_helper.dart';
-import 'success_checkout_page.dart';
-import 'package:flutter_library/flutter_library.dart';
+import '../../../../core/routes/app_router.dart';
 
-class CartPage extends StatelessWidget {
+class CartPage extends StatefulWidget {
   const CartPage({super.key});
+
+  @override
+  State<CartPage> createState() => _CartPageState();
+}
+
+class _CartPageState extends State<CartPage> {
+  @override
+  void initState() {
+    super.initState();
+    // Tarik data terbaru saat halaman dibuka
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      context.read<CartProvider>().fetchCart();
+    });
+  }
 
   String _formatRupiah(double value) {
     String strValue = value.toInt().toString();
@@ -17,258 +28,241 @@ class CartPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cart = context.watch<CartProvider>();
-
-    // --- PENGAMBILAN WARNA DINAMIS DARI TEMA ---
+    final cartProv = context.watch<CartProvider>();
     final theme = Theme.of(context);
-    final isDark = theme.brightness == Brightness.dark;
-
-    final scaffoldBgColor = theme.scaffoldBackgroundColor;
-    final surfaceColor = theme.colorScheme.surface;
     final onSurfaceColor = theme.colorScheme.onSurface;
 
-    final imageBgColor = isDark
-        ? const Color(0xFF1E1E1E)
-        : const Color(0xFFF8F9FA);
-    final dividerColor = isDark ? const Color(0xFF3A3A3A) : Colors.black12;
-    final subtitleColor = isDark ? Colors.grey.shade400 : Colors.grey.shade700;
-    final trashIconColor = isDark ? Colors.grey.shade500 : Colors.black54;
-
-    // Tombol menyesuaikan: Emas di Dark Mode, Hitam di Light Mode
-    final buttonBgColor = isDark
-        ? const Color(0xFFC6A87C)
-        : const Color(0xFF1A1A1A);
-    final buttonTextColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
-
     return Scaffold(
-      backgroundColor: scaffoldBgColor, // <-- Dinamis
       appBar: AppBar(
-        backgroundColor: surfaceColor, // <-- Dinamis
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        iconTheme: IconThemeData(color: onSurfaceColor), // <-- Dinamis
         title: Text(
-          'YOUR BAG',
+          'KERANJANG BELANJA',
           style: GoogleFonts.lato(
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-            color: onSurfaceColor, // <-- Dinamis
-            letterSpacing: 2.0,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            color: onSurfaceColor,
           ),
         ),
         centerTitle: true,
       ),
-      body: cart.items.isEmpty
-          ? Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.shopping_bag_outlined,
-                    size: 80,
-                    color: isDark
-                        ? Colors.grey.shade700
-                        : Colors.grey.shade300, // <-- Dinamis
-                  ),
-                  const SizedBox(height: 16),
-                  Text(
-                    'Your bag is empty.',
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 20,
-                      color: subtitleColor, // <-- Dinamis
-                    ),
-                  ),
-                ],
-              ),
-            )
-          : ListView.separated(
-              padding: const EdgeInsets.all(24),
-              itemCount: cart.items.length,
-              separatorBuilder: (_, __) =>
-                  Divider(color: dividerColor, height: 32), // <-- Dinamis
-              itemBuilder: (context, i) {
-                final item = cart.items.values.toList()[i];
-                return Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Gambar Produk
-                    Container(
-                      width: 80,
-                      height: 100,
-                      color: imageBgColor, // <-- Dinamis
-                      child: Image.network(
-                        item.imageUrl,
-                        fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => Icon(
-                          Icons.watch,
-                          color: isDark
-                              ? Colors.grey.shade700
-                              : Colors.grey.shade300,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    // Detail Produk
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item.name,
-                            style: GoogleFonts.playfairDisplay(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: onSurfaceColor, // <-- Dinamis
-                            ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            _formatRupiah(item.price),
-                            style: GoogleFonts.lato(
-                              fontSize: 14,
-                              color: subtitleColor, // <-- Dinamis
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'QTY: ${item.quantity}',
-                            style: GoogleFonts.lato(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(
-                                0xFFC6A87C,
-                              ), // Warna emas tetap
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    // Tombol Hapus (Trash)
-                    IconButton(
-                      icon: Icon(
-                        Icons.delete_outline,
-                        color: trashIconColor, // <-- Dinamis
-                      ),
-                      onPressed: () {
-                        context.read<CartProvider>().removeItem(item.productId);
-                      },
-                    ),
-                  ],
-                );
-              },
+      body: _buildBody(cartProv, theme),
+      bottomNavigationBar: _buildBottomBar(cartProv, theme),
+    );
+  }
+
+  Widget _buildBody(CartProvider cartProv, ThemeData theme) {
+    // KONDISI 1: LOADING
+    if (cartProv.status == CartStatus.initial ||
+        cartProv.status == CartStatus.loading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    // KONDISI 2: ERROR
+    if (cartProv.status == CartStatus.error) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text(
+              cartProv.error ?? 'Terjadi kesalahan',
+              textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () => cartProv.fetchCart(),
+              child: const Text('Coba Lagi'),
+            ),
+          ],
+        ),
+      );
+    }
 
-      // Bagian Total dan Checkout
-      bottomNavigationBar: cart.items.isEmpty
-          ? null
-          : Container(
-              padding: const EdgeInsets.all(24),
+    // KONDISI 3: LOADED
+    final cart = cartProv.cart;
+    if (cart == null || cart.items.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.shopping_cart_outlined,
+              size: 80,
+              color: Colors.grey.shade400,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Keranjang masih kosong',
+              style: GoogleFonts.playfairDisplay(fontSize: 20),
+            ),
+            const SizedBox(height: 8),
+            const Text('Yuk tambahkan produk ke keranjang!'),
+          ],
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: const EdgeInsets.all(16),
+      itemCount: cart.items.length,
+      separatorBuilder: (_, __) => const Divider(height: 32),
+      itemBuilder: (context, index) {
+        final item = cart.items[index];
+        final isDark = theme.brightness == Brightness.dark;
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Gambar Produk
+            Container(
+              width: 80,
+              height: 80,
               decoration: BoxDecoration(
-                color: surfaceColor, // <-- Dinamis
-                border: Border(
-                  top: BorderSide(color: dividerColor),
-                ), // <-- Dinamis
-              ),
-              child: SafeArea(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'TOTAL',
-                          style: GoogleFonts.lato(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1.5,
-                            color: onSurfaceColor, // <-- Dinamis
-                          ),
-                        ),
-                        Text(
-                          _formatRupiah(cart.totalAmount),
-                          style: GoogleFonts.playfairDisplay(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: onSurfaceColor, // <-- Dinamis
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: cart.isLoading
-                            ? null
-                            : () async {
-                                final success = await context
-                                    .read<CartProvider>()
-                                    .processCheckout();
-
-                                if (!context.mounted) return;
-
-                                if (success) {
-                                  context
-                                      .read<ProductProvider>()
-                                      .fetchProducts();
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(
-                                      builder: (context) =>
-                                          const SuccessCheckoutPage(),
-                                    ),
-                                  );
-                                } else {
-                                  SnackBarHelper.showError(
-                                    'Failed to place order. Please try again.',
-                                  );
-                                }
-                              },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: buttonBgColor, // <-- Dinamis
-                          padding: const EdgeInsets.symmetric(vertical: 20),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(0),
-                          ),
-                        ),
-                        child: Text(
-                          cart.isLoading
-                              ? 'PROCESSING...'
-                              : 'PROCEED TO CHECKOUT',
-                          style: GoogleFonts.lato(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 2.0,
-                            color: buttonTextColor, // <-- Dinamis
-                          ),
-                        ),
-                      ),
-                    ),
-                    // --- SAKLAR TESTING CUSTOM BUTTON (TUGAS MATERI 1) ---
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: CustomButton(
-                        label: 'TEST LIBRARY BUTTON',
-                        color: isDark
-                            ? const Color(0xFF3A3A3A)
-                            : Colors.grey.shade300,
-                        borderRadiusTanger:
-                            BorderRadius.zero, // Menjaga garis tegas luxury
-                        onPressed: () {
-                          SnackBarHelper.showSuccess(
-                            'Library internal berhasil dieksekusi di proyek utama!',
-                          );
-                        },
-                      ),
-                    ),
-                  ],
+                color: isDark ? Colors.grey.shade800 : Colors.grey.shade200,
+                borderRadius: BorderRadius.circular(8),
+                image: DecorationImage(
+                  image: NetworkImage(item.product.imageUrl),
+                  fit: BoxFit.cover,
                 ),
               ),
             ),
+            const SizedBox(width: 16),
+            // Detail & Logika Kuantitas
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    item.product.name,
+                    style: GoogleFonts.lato(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    _formatRupiah(item.product.price),
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // Tombol Minus & Logika Remove [cite: 264, 267, 268]
+                      IconButton(
+                        icon: const Icon(Icons.remove_circle_outline),
+                        onPressed: () {
+                          final qty = item.quantity - 1;
+                          if (qty <= 0) {
+                            cartProv.removeItem(item.id);
+                          } else {
+                            cartProv.updateItem(item.id, qty); // [cite: 270]
+                          }
+                        },
+                      ),
+                      Text(
+                        '${item.quantity}',
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
+                      ),
+                      // Tombol Plus [cite: 264, 273]
+                      IconButton(
+                        icon: const Icon(Icons.add_circle_outline),
+                        onPressed: () =>
+                            cartProv.updateItem(item.id, item.quantity + 1),
+                      ),
+                      const Spacer(),
+                      // Subtotal Baris
+                      Text(
+                        _formatRupiah(item.subtotal),
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget? _buildBottomBar(CartProvider cartProv, ThemeData theme) {
+    if (cartProv.status != CartStatus.loaded ||
+        cartProv.cart == null ||
+        cartProv.cart!.items.isEmpty) {
+      return null;
+    }
+
+    final isDark = theme.brightness == Brightness.dark;
+    final buttonColor = isDark
+        ? const Color(0xFFC6A87C)
+        : const Color(0xFF1A1A1A);
+    final textColor = isDark ? const Color(0xFF1A1A1A) : Colors.white;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: theme.scaffoldBackgroundColor,
+        border: Border(
+          top: BorderSide(
+            color: isDark ? Colors.grey.shade800 : Colors.grey.shade300,
+          ),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                const Text(
+                  'TOTAL',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 1.5,
+                  ),
+                ),
+                Text(
+                  _formatRupiah(cartProv.totalAmount),
+                  style: GoogleFonts.playfairDisplay(
+                    fontSize: 22,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: buttonColor,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.zero,
+                  ),
+                ),
+                onPressed: () {
+                  // Lompat ke Halaman Checkout
+                  Navigator.pushNamed(context, AppRouter.checkout);
+                },
+                child: Text(
+                  'CHECKOUT',
+                  style: GoogleFonts.lato(
+                    color: textColor,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2.0,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
