@@ -1,97 +1,92 @@
-import 'package:flutter/material.dart';
-import '../../data/models/cart_item_model.dart';
-import '../../data/repositories/cart_repository.dart';
-import '../../../dashboard/data/models/product_model.dart';
+import 'package:flutter/foundation.dart';
+import '../../data/models/cart_model.dart';
+import '../../data/repositories/cart_repository_impl.dart';
 
-class CartProvider with ChangeNotifier {
-  // Kita gunakan Map agar pencarian barang lebih cepat (Big O(1))
-  final Map<int, CartItemModel> _items = {};
+// Definisi status sesuai instruksi dokumen
+enum CartStatus { initial, loading, loaded, error }
 
-  Map<int, CartItemModel> get items => _items;
+class CartProvider extends ChangeNotifier {
+  final CartRepositoryImpl _repository = CartRepositoryImpl();
 
-  int get itemCount => _items.length;
+  CartStatus _status = CartStatus.initial;
+  CartStatus get status => _status;
 
-  double get totalAmount {
-    var total = 0.0;
-    _items.forEach((key, cartItem) {
-      total += cartItem.price * cartItem.quantity;
-    });
-    return total;
-  }
+  CartModel? _cart;
+  CartModel? get cart => _cart;
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  String? _error;
+  String? get error => _error;
 
-  final CartRepository _repository = CartRepository();
+  // Flag khusus agar tombol "Tambah ke Keranjang" bisa menampilkan spinner
+  bool _isAdding = false;
+  bool get isAdding => _isAdding;
 
-  // Ubah tipe data kembalian dari void menjadi bool agar UI tahu statusnya
-  bool addItem(ProductModel product) {
-    final currentStock = product.stock ?? 0; // Ambil info stok dari database
+  // Getter untuk badge notifikasi di bottom nav
+  int get itemCount => _cart?.itemCount ?? 0;
 
-    if (_items.containsKey(product.id)) {
-      // PERTAHANAN 1: Cegah jika jumlah di keranjang sudah mencapai batas stok
-      if (_items[product.id]!.quantity >= currentStock) {
-        return false; // TOLAK!
-      }
+  // Getter tambahan untuk total harga keranjang
+  double get totalAmount => _cart?.total ?? 0.0;
 
-      // Jika masih aman, tambah jumlahnya
-      _items.update(
-        product.id,
-        (existingItem) => CartItemModel(
-          productId: existingItem.productId,
-          name: existingItem.name,
-          price: existingItem.price,
-          imageUrl: existingItem.imageUrl,
-          quantity: existingItem.quantity + 1,
-        ),
-      );
-    } else {
-      // PERTAHANAN 2: Cegah barang masuk jika stok di database memang 0 (Habis)
-      if (currentStock < 1) {
-        return false; // TOLAK!
-      }
-
-      // Jika belum ada dan stok tersedia, masukkan sebagai barang baru
-      _items.putIfAbsent(
-        product.id,
-        () => CartItemModel(
-          productId: product.id,
-          name: product.name,
-          price: product.price,
-          imageUrl: product.imageUrl,
-          quantity: 1,
-        ),
-      );
+  Future<void> fetchCart() async {
+    _status = CartStatus.loading;
+    notifyListeners();
+    try {
+      _cart = await _repository.getCart();
+      _status = CartStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+      _status = CartStatus.error;
     }
-    notifyListeners(); // Beri tahu UI untuk update!
-    return true; // BERHASIL!
-  }
-
-  void removeItem(int productId) {
-    _items.remove(productId);
     notifyListeners();
   }
 
-  void clearCart() {
-    _items.clear();
+  Future<bool> addToCart(int productId, int quantity) async {
+    _isAdding = true;
     notifyListeners();
-  }
-
-  Future<bool> processCheckout() async {
-    _isLoading = true;
-    notifyListeners();
-
-    final success = await _repository.checkout(
-      _items.values.toList(),
-      totalAmount,
-    );
-
-    if (success) {
-      clearCart(); // Kosongkan keranjang jika sukses
+    try {
+      await _repository.addToCart(productId, quantity);
+      await fetchCart(); // Refresh data cart setelah berhasil ditambah
+      _isAdding = false;
+      notifyListeners();
+      return true;
+    } catch (e) {
+      _isAdding = false;
+      _error = e.toString();
+      notifyListeners();
+      return false;
     }
+  }
 
-    _isLoading = false;
-    notifyListeners();
-    return success;
+  Future<void> updateItem(int cartItemId, int quantity) async {
+    try {
+      await _repository.updateCartItem(cartItemId, quantity);
+      await fetchCart(); // Selalu refresh setelah update
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> removeItem(int cartItemId) async {
+    try {
+      await _repository.removeCartItem(cartItemId);
+      await fetchCart(); // Selalu refresh setelah hapus
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
+  }
+
+  Future<void> clearCart() async {
+    try {
+      await _repository.clearCart();
+      // Langsung set state ke kosong tanpa request ulang API agar lebih instan
+      _cart = const CartModel(items: [], total: 0, itemCount: 0);
+      _status = CartStatus.loaded;
+      notifyListeners();
+    } catch (e) {
+      _error = e.toString();
+      notifyListeners();
+    }
   }
 }

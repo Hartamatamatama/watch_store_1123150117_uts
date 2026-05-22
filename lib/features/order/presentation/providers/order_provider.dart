@@ -2,59 +2,61 @@ import 'package:flutter/foundation.dart';
 import '../../data/models/order_model.dart';
 import '../../data/repositories/order_repository_impl.dart';
 
+enum OrderStatus { initial, loading, success, error }
+
 class OrderProvider extends ChangeNotifier {
-  // Memanggil pasukan eksekutor yang baru saja kita perbaiki jalurnya
   final OrderRepositoryImpl _repository = OrderRepositoryImpl();
 
-  bool _isLoading = false;
-  bool get isLoading => _isLoading;
+  OrderStatus _checkoutStatus = OrderStatus.initial;
+  OrderStatus get checkoutStatus => _checkoutStatus;
 
-  String? _errorMessage;
-  String? get errorMessage => _errorMessage;
+  // Menyimpan pesanan terakhir agar bisa ditampilkan di OrderSuccessPage
+  OrderModel? _lastOrder;
+  OrderModel? get lastOrder => _lastOrder;
 
-  List<OrderModel> _myOrders = [];
-  List<OrderModel> get myOrders => _myOrders;
+  List<OrderModel> _orders = [];
+  List<OrderModel> get orders => _orders;
 
-  // Operasi 1: Eksekusi Checkout
-  Future<bool> processCheckout({
+  String? _error;
+  String? get error => _error;
+
+  Future<bool> checkout({
     required String shippingAddress,
     String? notes,
     required String paymentMethod,
   }) async {
-    _isLoading = true;
-    _errorMessage = null;
+    _checkoutStatus = OrderStatus.loading;
     notifyListeners();
 
     try {
-      await _repository.checkout(
+      _lastOrder = await _repository.checkout(
         shippingAddress: shippingAddress,
         notes: notes,
         paymentMethod: paymentMethod,
       );
-      _isLoading = false;
+      _checkoutStatus = OrderStatus.success;
       notifyListeners();
       return true;
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Gagal melakukan checkout: ${e.toString()}';
+      _error = 'Gagal melakukan checkout: ${e.toString()}';
+      _checkoutStatus = OrderStatus.error;
       notifyListeners();
       return false;
     }
   }
 
-  // Operasi 2: Mengambil Riwayat Pesanan
   Future<void> fetchMyOrders() async {
-    _isLoading = true;
-    _errorMessage = null;
+    _checkoutStatus = OrderStatus.loading;
     notifyListeners();
 
     try {
-      _myOrders = await _repository.getMyOrders();
-      _isLoading = false;
+      _orders = await _repository.getMyOrders();
+      _checkoutStatus = OrderStatus
+          .success; // Bisa disesuaikan logicnya jika butuh status terpisah
       notifyListeners();
     } catch (e) {
-      _isLoading = false;
-      _errorMessage = 'Gagal memuat pesanan: ${e.toString()}';
+      _error = 'Gagal memuat pesanan: ${e.toString()}';
+      _checkoutStatus = OrderStatus.error;
       notifyListeners();
     }
   }
