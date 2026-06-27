@@ -11,6 +11,7 @@ import '../../features/cart/presentation/pages/cart_page.dart';
 import '../../features/order/presentation/pages/checkout_page.dart';
 import '../../features/order/presentation/pages/order_success_page.dart';
 import '../../features/order/presentation/pages/my_orders_page.dart';
+import '../../features/order/presentation/pages/payment_pending_page.dart';
 import '../../features/order/data/models/order_model.dart';
 
 class AppRouter {
@@ -23,6 +24,7 @@ class AppRouter {
   static const String checkout = '/checkout';
   static const String orderSuccess = '/order-success';
   static const String myOrders = '/my-orders';
+  static const String paymentPending = '/payment-pending';
 
   static Map<String, WidgetBuilder> get routes => {
     splash: (_) => const SplashPage(),
@@ -37,6 +39,14 @@ class AppRouter {
       // Menangkap data OrderModel yang dikirim dari CheckoutPage
       final order = ModalRoute.of(context)!.settings.arguments as OrderModel;
       return OrderSuccessPage(order: order);
+    },
+    paymentPending: (context) {
+      final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+      return PaymentPendingPage(
+        orderId: args['orderId'] as int,
+        amount: (args['amount'] as num).toDouble(),
+        description: args['description'] as String? ?? '',
+      );
     },
   };
 }
