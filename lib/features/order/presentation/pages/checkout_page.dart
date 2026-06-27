@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:provider/provider.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../../core/services/global_institute_pay_service.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 import '../providers/order_provider.dart';
 
@@ -39,25 +39,11 @@ class _CheckoutPageState extends State<CheckoutPage> {
 
   static const List<_PaymentOption> _paymentOptions = [
     _PaymentOption(
-      value: 'gopay',
-      label: 'GoPay',
-      subtitle: 'Bayar instant dengan GoPay',
+      value: 'global_institute_pay',
+      label: 'Global Institute Pay',
+      subtitle: 'Bayar via Dompet Kampus Global',
       icon: Icons.account_balance_wallet,
       iconColor: Color(0xFF00ADB5),
-    ),
-    _PaymentOption(
-      value: 'bank_transfer',
-      label: 'Transfer Bank',
-      subtitle: 'BCA, Mandiri, BNI, BRI',
-      icon: Icons.account_balance,
-      iconColor: Color(0xFF1565C0),
-    ),
-    _PaymentOption(
-      value: 'virtual_account',
-      label: 'Virtual Account',
-      subtitle: 'Nomor VA otomatis digenerate',
-      icon: Icons.credit_card,
-      iconColor: Color(0xFFE65100),
     ),
   ];
 
@@ -92,7 +78,21 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    // 3. Tampilkan loading dialog
+    // 3. Kalo pilih Global Institute Pay, arahkan ke PaymentPendingPage
+    if (_selectedPaymentMethod == 'global_institute_pay') {
+      Navigator.pushNamed(
+        context,
+        AppRouter.paymentPending,
+        arguments: {
+          'orderId': DateTime.now().millisecondsSinceEpoch % 100000,
+          'amount': cartProv.totalAmount,
+          'description': 'Pembayaran Watch Store',
+        },
+      );
+      return;
+    }
+
+    // 4. Tampilkan loading dialog
     showDialog(
       context: context,
       barrierDismissible: false,
