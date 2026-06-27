@@ -10,6 +10,7 @@ import 'features/auth/presentation/providers/auth_provider.dart';
 import 'features/dashboard/presentation/providers/product_provider.dart';
 import 'features/cart/presentation/providers/cart_provider.dart';
 import 'core/services/fcm_service.dart';
+import 'core/services/global_institute_pay_service.dart';
 import 'core/services/biometric_lock_provider.dart';
 import 'core/widgets/biometric_lock_screen.dart';
 import 'features/order/presentation/providers/order_provider.dart';
@@ -26,6 +27,9 @@ void main() async {
 
   // --- AKTIFKAN RADAR NOTIFIKASI ---
   await FCMService.initialize();
+
+  // --- AKTIFKAN LISTENER DEEPLINK PEMBAYARAN ---
+  await GlobalInstitutePayService().init();
 
   runApp(
     MultiProvider(
