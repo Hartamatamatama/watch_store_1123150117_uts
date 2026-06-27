@@ -8,7 +8,7 @@ class ApiConstants {
   // static const String baseUrl = 'http://10.72.121.59:8080/v1';
 
   // Wifi Rumah
-  static const String baseUrl = 'http://192.168.100.11:8080/v1';
+  static const String baseUrl = 'http://10.0.2.2:8081/v1';
 
   // Auth endpoints
   static const String verifyToken = '/auth/verify-token';
