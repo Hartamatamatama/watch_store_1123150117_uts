@@ -6,6 +6,8 @@ import 'login_page.dart';
 // Import ke halaman dashboard (lompat 3 folder ke atas, lalu masuk ke dashboard)
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
 import '../../../../core/services/global_institute_pay_service.dart';
+import '../../../../core/services/dio_client.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../../core/routes/app_router.dart';
 
 class SplashPage extends StatefulWidget {
@@ -31,7 +33,24 @@ class _SplashPageState extends State<SplashPage> {
     // Cek pending callback pembayaran (cold start dari Dompet Kampus)
     final pending = GlobalInstitutePayService().consumePendingCallback();
     if (pending != null && pending.isSuccess) {
-      Navigator.pushReplacementNamed(context, AppRouter.myOrders);
+      // Parse orderId dari reference (format: INV-123)
+      final ref = pending.reference ?? '';
+      final orderId = int.tryParse(ref.replaceAll('INV-', ''));
+      if (orderId != null) {
+        // Update status order ke processing + kurangi stok
+        try {
+          await DioClient.instance.put(
+            '${ApiConstants.orders}/$orderId/confirm-payment',
+          );
+        } catch (_) {}
+      }
+
+      Navigator.pushReplacementNamed(context, AppRouter.orderSuccess,
+        arguments: {
+          'orderId': orderId ?? 0,
+          'amount': 0,
+        },
+      );
       return;
     }
 
