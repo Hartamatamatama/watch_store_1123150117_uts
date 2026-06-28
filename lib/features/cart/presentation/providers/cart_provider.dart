@@ -21,6 +21,10 @@ class CartProvider extends ChangeNotifier {
   bool _isAdding = false;
   bool get isAdding => _isAdding;
 
+  // Flag khusus refresh background tanpa set loading — hindari kedip
+  bool _isRefreshing = false;
+  bool get isRefreshing => _isRefreshing;
+
   // Getter untuk badge notifikasi di bottom nav
   int get itemCount => _cart?.itemCount ?? 0;
 
@@ -40,12 +44,25 @@ class CartProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Refresh cart tanpa set loading — biar gak kedip
+  Future<void> _refreshCart() async {
+    _isRefreshing = true;
+    try {
+      _cart = await _repository.getCart();
+      _status = CartStatus.loaded;
+    } catch (e) {
+      _error = e.toString();
+    }
+    _isRefreshing = false;
+    notifyListeners();
+  }
+
   Future<bool> addToCart(int productId, int quantity) async {
     _isAdding = true;
     notifyListeners();
     try {
       await _repository.addToCart(productId, quantity);
-      await fetchCart(); // Refresh data cart setelah berhasil ditambah
+      await _refreshCart(); // Refresh tanpa loading biar gak kedip
       _isAdding = false;
       notifyListeners();
       return true;
@@ -60,7 +77,7 @@ class CartProvider extends ChangeNotifier {
   Future<void> updateItem(int cartItemId, int quantity) async {
     try {
       await _repository.updateCartItem(cartItemId, quantity);
-      await fetchCart(); // Selalu refresh setelah update
+      await _refreshCart(); // Refresh tanpa loading biar gak kedip
     } catch (e) {
       _error = e.toString();
       notifyListeners();
@@ -70,7 +87,7 @@ class CartProvider extends ChangeNotifier {
   Future<void> removeItem(int cartItemId) async {
     try {
       await _repository.removeCartItem(cartItemId);
-      await fetchCart(); // Selalu refresh setelah hapus
+      await _refreshCart(); // Refresh tanpa loading biar gak kedip
     } catch (e) {
       _error = e.toString();
       notifyListeners();
