@@ -49,7 +49,7 @@ class CartItemModel {
     final subtotal = apiSubtotal > 0 ? apiSubtotal : product.price * quantity;
 
     return CartItemModel(
-      id: json['id'] as int? ?? 0,
+      id: json['id'] as int? ?? json['ID'] as int? ?? 0,
       productId: json['product_id'] as int? ?? product.id,
       product: product,
       quantity: quantity,
