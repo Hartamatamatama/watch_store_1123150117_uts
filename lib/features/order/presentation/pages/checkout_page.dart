@@ -78,13 +78,31 @@ class _CheckoutPageState extends State<CheckoutPage> {
       return;
     }
 
-    // 3. Kalo pilih Global Institute Pay, arahkan ke PaymentPendingPage
+    // 3. Kalo pilih Global Institute Pay, buat order dulu di backend
     if (_selectedPaymentMethod == 'global_institute_pay') {
+      // Panggil API checkout dulu — ini yg decrement stok & bikin order
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (_) => const Center(child: CircularProgressIndicator()),
+      );
+
+      final success = await orderProv.checkout(
+        shippingAddress: _addressCtrl.text.trim(),
+        notes: _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
+        paymentMethod: _selectedPaymentMethod!,
+      );
+
+      if (mounted) Navigator.pop(context); // tutup loading
+
+      if (!success || !mounted) return;
+
+      // Order sudah jadi di backend + stok berkurang. Lanjut ke pending payment.
       Navigator.pushNamed(
         context,
         AppRouter.paymentPending,
         arguments: {
-          'orderId': DateTime.now().millisecondsSinceEpoch % 100000,
+          'orderId': orderProv.lastOrder!.id,
           'amount': cartProv.totalAmount,
           'description': 'Pembayaran Watch Store',
         },
