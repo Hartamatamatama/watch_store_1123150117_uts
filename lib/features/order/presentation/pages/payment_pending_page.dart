@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/services/global_institute_pay_service.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../../core/services/dio_client.dart';
+import '../../../../core/constants/api_constants.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 
 /// Halaman yang muncul setelah user memilih bayar dengan Global Institute Pay.
@@ -56,7 +58,7 @@ class _PaymentPendingPageState extends State<PaymentPendingPage> {
     });
   }
 
-  void _onCallback(PaymentCallbackData data) {
+  void _onCallback(PaymentCallbackData data) async {
     if (!mounted) return;
     _subscription?.cancel();
 
@@ -64,6 +66,14 @@ class _PaymentPendingPageState extends State<PaymentPendingPage> {
 
     if (data.isSuccess) {
       cartProv.clearCart();
+      // Update status order di backend dari pending → processing
+      try {
+        await DioClient.instance.put(
+          '${ApiConstants.orders}/${widget.orderId}/confirm-payment',
+        );
+      } catch (_) {
+        // Gagal update status bukan bencana — order tetap ada
+      }
       Navigator.pushNamedAndRemoveUntil(
         context,
         AppRouter.orderSuccess,
