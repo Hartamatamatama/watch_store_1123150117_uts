@@ -5,6 +5,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'login_page.dart';
 // Import ke halaman dashboard (lompat 3 folder ke atas, lalu masuk ke dashboard)
 import '../../../dashboard/presentation/pages/dashboard_page.dart';
+import '../../../../core/services/global_institute_pay_service.dart';
+import '../../../../core/routes/app_router.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -23,6 +25,15 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _checkLoginStatus() async {
     // Berikan jeda 2 detik agar logo toko jam-mu terlihat
     await Future.delayed(const Duration(seconds: 2));
+
+    if (!mounted) return;
+
+    // Cek pending callback pembayaran (cold start dari Dompet Kampus)
+    final pending = GlobalInstitutePayService().consumePendingCallback();
+    if (pending != null && pending.isSuccess) {
+      Navigator.pushReplacementNamed(context, AppRouter.myOrders);
+      return;
+    }
 
     // Cek apakah ada user yang sudah login di Firebase
     User? user = FirebaseAuth.instance.currentUser;

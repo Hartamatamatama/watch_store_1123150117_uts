@@ -36,9 +36,24 @@ class AppRouter {
     checkout: (_) => const CheckoutPage(),
     myOrders: (_) => const MyOrdersPage(),
     orderSuccess: (context) {
-      // Menangkap data OrderModel yang dikirim dari CheckoutPage
-      final order = ModalRoute.of(context)!.settings.arguments as OrderModel;
-      return OrderSuccessPage(order: order);
+      final args = ModalRoute.of(context)!.settings.arguments;
+      if (args is OrderModel) {
+        return OrderSuccessPage(order: args);
+      }
+      // Fallback: dari payment callback (cold start) — minimal order object
+      final map = args as Map<String, dynamic>? ?? {};
+      return OrderSuccessPage(
+        order: OrderModel(
+          id: map['orderId'] as int? ?? 0,
+          totalAmount: (map['amount'] as num?)?.toDouble() ?? 0.0,
+          status: 'pending',
+          shippingAddress: '',
+          notes: '',
+          paymentMethod: 'global_institute_pay',
+          items: [],
+          createdAt: DateTime.now().toIso8601String(),
+        ),
+      );
     },
     paymentPending: (context) {
       final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
