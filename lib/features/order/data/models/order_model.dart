@@ -49,7 +49,7 @@ class OrderModel {
         .toList();
 
     return OrderModel(
-      id: json['id'] as int? ?? 0,
+      id: json['id'] as int? ?? json['ID'] as int? ?? 0,
       totalAmount: (json['total_amount'] as num?)?.toDouble() ?? 0.0,
       status: json['status'] as String? ?? 'pending',
       shippingAddress: json['shipping_address'] as String? ?? '',

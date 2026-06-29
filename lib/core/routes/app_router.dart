@@ -40,13 +40,13 @@ class AppRouter {
       if (args is OrderModel) {
         return OrderSuccessPage(order: args);
       }
-      // Fallback: dari payment callback (cold start) — minimal order object
+      // Fallback aman (seharusnya jarang kepake)
       final map = args as Map<String, dynamic>? ?? {};
       return OrderSuccessPage(
         order: OrderModel(
           id: map['orderId'] as int? ?? 0,
           totalAmount: (map['amount'] as num?)?.toDouble() ?? 0.0,
-          status: 'pending',
+          status: 'processing',
           shippingAddress: '',
           notes: '',
           paymentMethod: 'global_institute_pay',

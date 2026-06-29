@@ -9,6 +9,7 @@ import '../../../../core/services/global_institute_pay_service.dart';
 import '../../../../core/services/dio_client.dart';
 import '../../../../core/constants/api_constants.dart';
 import '../../../../core/routes/app_router.dart';
+import '../../../order/data/models/order_model.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -36,20 +37,34 @@ class _SplashPageState extends State<SplashPage> {
       // Parse orderId dari reference (format: INV-123)
       final ref = pending.reference ?? '';
       final orderId = int.tryParse(ref.replaceAll('INV-', ''));
+      OrderModel? order;
       if (orderId != null) {
         // Update status order ke processing + kurangi stok
         try {
           await DioClient.instance.put(
             '${ApiConstants.orders}/$orderId/confirm-payment',
           );
+          // Ambil data order real
+          final resp = await DioClient.instance.get(
+            '${ApiConstants.orders}/$orderId',
+          );
+          if (resp.data['success'] == true) {
+            order = OrderModel.fromJson(resp.data['data'] as Map<String, dynamic>);
+          }
         } catch (_) {}
       }
 
       Navigator.pushReplacementNamed(context, AppRouter.orderSuccess,
-        arguments: {
-          'orderId': orderId ?? 0,
-          'amount': 0,
-        },
+        arguments: order ?? OrderModel(
+          id: orderId ?? 0,
+          totalAmount: 0,
+          status: 'processing',
+          shippingAddress: '',
+          notes: '',
+          paymentMethod: 'global_institute_pay',
+          items: [],
+          createdAt: DateTime.now().toIso8601String(),
+        ),
       );
       return;
     }

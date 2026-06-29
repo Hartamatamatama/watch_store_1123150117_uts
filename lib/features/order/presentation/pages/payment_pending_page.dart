@@ -8,6 +8,7 @@ import '../../../../core/services/global_institute_pay_service.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/dio_client.dart';
 import '../../../../core/constants/api_constants.dart';
+import '../../../../data/models/order_model.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 
 /// Halaman yang muncul setelah user memilih bayar dengan Global Institute Pay.
@@ -66,22 +67,37 @@ class _PaymentPendingPageState extends State<PaymentPendingPage> {
 
     if (data.isSuccess) {
       cartProv.clearCart();
-      // Update status order di backend dari pending → processing
+      OrderModel? order;
+      // Update status order di backend dari pending → processing, lalu ambil data real
       try {
         await DioClient.instance.put(
           '${ApiConstants.orders}/${widget.orderId}/confirm-payment',
         );
+        // Ambil data order real dari backend
+        final resp = await DioClient.instance.get(
+          '${ApiConstants.orders}/${widget.orderId}',
+        );
+        if (resp.data['success'] == true) {
+          order = OrderModel.fromJson(resp.data['data'] as Map<String, dynamic>);
+        }
       } catch (_) {
         // Gagal update status bukan bencana — order tetap ada
       }
+
       Navigator.pushNamedAndRemoveUntil(
         context,
         AppRouter.orderSuccess,
         (route) => route.settings.name == AppRouter.dashboard,
-        arguments: {
-          'orderId': widget.orderId,
-          'amount': widget.amount,
-        },
+        arguments: order ?? OrderModel(
+          id: widget.orderId,
+          totalAmount: widget.amount,
+          status: 'processing',
+          shippingAddress: '',
+          notes: '',
+          paymentMethod: 'global_institute_pay',
+          items: [],
+          createdAt: DateTime.now().toIso8601String(),
+        ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
