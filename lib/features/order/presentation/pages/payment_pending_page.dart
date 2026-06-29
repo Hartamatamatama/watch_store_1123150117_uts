@@ -8,7 +8,7 @@ import '../../../../core/services/global_institute_pay_service.dart';
 import '../../../../core/routes/app_router.dart';
 import '../../../../core/services/dio_client.dart';
 import '../../../../core/constants/api_constants.dart';
-import '../../../../data/models/order_model.dart';
+import '../../data/models/order_model.dart';
 import '../../../cart/presentation/providers/cart_provider.dart';
 
 /// Halaman yang muncul setelah user memilih bayar dengan Global Institute Pay.
