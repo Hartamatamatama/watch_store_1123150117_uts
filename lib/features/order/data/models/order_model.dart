@@ -59,4 +59,15 @@ class OrderModel {
       createdAt: json['created_at'] as String? ?? '',
     );
   }
+
+  String get paymentMethodLabel {
+    // Konversi dari snake_case ke Title Case
+    return paymentMethod
+        .replaceAll('_', ' ')
+        .split(' ')
+        .map((word) => word.isNotEmpty
+            ? '${word[0].toUpperCase()}${word.substring(1)}'
+            : '')
+        .join(' ');
+  }
 }

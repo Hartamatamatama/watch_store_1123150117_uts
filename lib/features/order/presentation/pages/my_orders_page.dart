@@ -164,6 +164,19 @@ class _MyOrdersPageState extends State<MyOrdersPage> {
               ),
               Row(
                 children: [
+                  const Icon(Icons.payment_outlined, color: Colors.grey),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      order.paymentMethodLabel,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
                   const Icon(Icons.shopping_bag_outlined, color: Colors.grey),
                   const SizedBox(width: 8),
                   Text(

@@ -1,0 +1,54 @@
+{
+  "project_info": {
+    "project_number": "339288104139",
+    "project_id": "auth-testing-farhan",
+    "storage_bucket": "auth-testing-farhan.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:339288104139:android:71ae62acb3074c6ed74f4e",
+        "android_client_info": {
+          "package_name": "com.example.watch_store"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "339288104139-0vfgheoegtg8c05blfgv4rs4gqg2tajd.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.watch_store",
+            "certificate_hash": "a70cebcdd4f0e6836c170018f801df1bb49251dd"
+          }
+        },
+        {
+          "client_id": "339288104139-bfr7d3grl1ojod42ivsdah5mpb1vk96m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBbyuzQi4fHhfVVL3jReiV44k3Qeul-kQg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "339288104139-bfr7d3grl1ojod42ivsdah5mpb1vk96m.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "339288104139-sof0gvkeoueke1rmdlktbuoc89ia5hho.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.watchStore"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

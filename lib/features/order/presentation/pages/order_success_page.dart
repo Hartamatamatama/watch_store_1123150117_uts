@@ -105,7 +105,7 @@ class OrderSuccessPage extends StatelessWidget {
                     _buildInfoRow(
                       Icons.payment,
                       'Metode Pembayaran',
-                      order.paymentMethod.toUpperCase(),
+                      order.paymentMethodLabel,
                       theme,
                     ),
                     const Divider(height: 32),
